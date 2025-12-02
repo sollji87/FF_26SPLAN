@@ -17,8 +17,15 @@ import { EndStockItem } from '../hooks/useEndStockData';
 import { SalesChannelItem, CHANNEL_ORDER } from '../hooks/useSalesData';
 import { OperatingExpenseResponse } from '../hooks/useOperatingExpenseData';
 
+interface ChnlCdItem {
+  CHNL_NM: string;
+  CHNL_CD: string;
+  ACT_SALE_AMT?: number;
+}
+
 interface ChannelSalesData {
   retailActSaleAmt?: number;  // 채널코드 3,4,5,7,11 실판가 합계 (로열티 계산용)
+  chnlCdData?: ChnlCdItem[];  // 채널코드별 실판가 데이터
   total: number;
   channels: SalesChannelItem[];
 }
