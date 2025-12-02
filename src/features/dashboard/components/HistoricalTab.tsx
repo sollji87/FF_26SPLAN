@@ -269,11 +269,10 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
         costOfSalesData['23S']?.cogsTotal &&
         directCostData['23S']?.totals &&
         operatingExpenseData['23S']
-        ? (vatExcSalesData['23S'].total -
+        ? vatExcSalesData['23S'].total -
             costOfSalesData['23S'].cogsTotal -
             directCostData['23S'].totals.DIRECT_COST_TOTAL -
-            operatingExpenseData['23S'].total.amt) /
-          1000000
+            operatingExpenseData['23S'].total.amt // 모두 백만원 단위
         : undefined,
       salesTagChannels: salesTagData['23S']?.channels?.map(ch => ({ CHNL_NM: ch.CHNL_NM, SALE_TAG_AMT: ch.SALE_TAG_AMT || 0 })),
       actualSalesChannels: actualSalesData['23S']?.channels?.map(ch => ({ CHNL_NM: ch.CHNL_NM, ACT_SALE_AMT: ch.ACT_SALE_AMT || 0 })),
@@ -333,11 +332,10 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
         costOfSalesData['24S']?.cogsTotal &&
         directCostData['24S']?.totals &&
         operatingExpenseData['24S']
-        ? (vatExcSalesData['24S'].total -
+        ? vatExcSalesData['24S'].total -
             costOfSalesData['24S'].cogsTotal -
             directCostData['24S'].totals.DIRECT_COST_TOTAL -
-            operatingExpenseData['24S'].total.amt) /
-          1000000
+            operatingExpenseData['24S'].total.amt // 모두 백만원 단위
         : undefined,
       salesTagChannels: salesTagData['24S']?.channels?.map(ch => ({ CHNL_NM: ch.CHNL_NM, SALE_TAG_AMT: ch.SALE_TAG_AMT || 0 })),
       actualSalesChannels: actualSalesData['24S']?.channels?.map(ch => ({ CHNL_NM: ch.CHNL_NM, ACT_SALE_AMT: ch.ACT_SALE_AMT || 0 })),
@@ -397,11 +395,10 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
         costOfSalesData['25S']?.cogsTotal &&
         directCostData['25S']?.totals &&
         operatingExpenseData['25S']
-        ? (vatExcSalesData['25S'].total -
+        ? vatExcSalesData['25S'].total -
             costOfSalesData['25S'].cogsTotal -
             directCostData['25S'].totals.DIRECT_COST_TOTAL -
-            operatingExpenseData['25S'].total.amt) /
-          1000000
+            operatingExpenseData['25S'].total.amt // 모두 백만원 단위
         : undefined,
       salesTagChannels: salesTagData['25S']?.channels?.map(ch => ({ CHNL_NM: ch.CHNL_NM, SALE_TAG_AMT: ch.SALE_TAG_AMT || 0 })),
       actualSalesChannels: actualSalesData['25S']?.channels?.map(ch => ({ CHNL_NM: ch.CHNL_NM, ACT_SALE_AMT: ch.ACT_SALE_AMT || 0 })),
