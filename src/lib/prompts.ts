@@ -10,13 +10,13 @@ export interface HistoricalInsightInput {
 
 const formatCSVValue = (value: number | undefined): string => {
   if (value === undefined || value === null) return '';
-  // 0도 명시적으로 표시
-  return value.toFixed(1);
+  // 천단위 콤마 추가, 정수로 표시
+  return Math.round(value).toLocaleString('ko-KR');
 };
 
 const formatCSVPercent = (value: number | undefined): string => {
   if (value === undefined || value === null) return '';
-  // 0도 명시적으로 표시
+  // 소수점 1자리까지 표시
   return value.toFixed(1);
 };
 
@@ -57,15 +57,8 @@ export const buildHistoricalPrompt = (input: HistoricalInsightInput): string => 
   addRow('재고평가감(추가)', (d) => ({ value: d.inventoryValuationAddition }));
   addRow('매출원가 소계', (d) => ({ value: d.cogsTotal }));
   
-  // 수익성
+  // 수익성 (금액 기준으로 분석하도록 비율 제거)
   addRow('매출총이익', (d) => ({ value: d.grossProfit }));
-  addRow('매출총이익률', (d) => { 
-    // 매출총이익률 = (매출총이익 / 실판가) * 1.1 * 100%
-    if (d.actualSales && d.grossProfit !== undefined) {
-      return { percent: (d.grossProfit / d.actualSales) * 1.1 * 100 };
-    }
-    return { percent: undefined };
-  });
   
   // 직접비 (0이 아닌 값이 있으면 반드시 표시)
   addRow('로열티', (d) => ({ 
@@ -102,9 +95,6 @@ export const buildHistoricalPrompt = (input: HistoricalInsightInput): string => 
     value: d.directCost?.total !== undefined ? d.directCost.total : undefined 
   }));
   addRow('직접이익', (d) => ({ value: d.directProfit }));
-  addRow('직접이익률', (d) => ({ 
-    percent: d.actualSales && d.directProfit ? (d.directProfit / d.actualSales) * 100 : undefined 
-  }));
   
   // 영업비
   addRow('광고비', (d) => ({ value: d.operatingExpense?.adExpense }));
@@ -115,9 +105,6 @@ export const buildHistoricalPrompt = (input: HistoricalInsightInput): string => 
   addRow('제조간접비 차감', (d) => ({ value: d.operatingExpense?.mfcIndirect }));
   addRow('영업비 합계', (d) => ({ value: d.operatingExpense?.total }));
   addRow('영업이익', (d) => ({ value: d.operatingProfit }));
-  addRow('영업이익률', (d) => ({ 
-    percent: d.actualSales && d.operatingProfit ? (d.operatingProfit / d.actualSales) * 100 : undefined 
-  }));
   
   // 채널별 데이터
   const channelRows: string[] = [];
@@ -157,29 +144,26 @@ export const buildHistoricalPrompt = (input: HistoricalInsightInput): string => 
 아래는 ${input.brandKo}(${input.brand}) 브랜드의 최근 3개 시즌(23S, 24S, 25S) 요약 손익계산서 전체 데이터를 CSV 형식으로 정리한 것입니다.
 
 [중요] 
-- 모든 금액은 백만원 단위입니다. 예를 들어, 237,734는 237,734백만원을 의미합니다.
+- 모든 금액은 백만원 단위입니다. 예를 들어, "237,734"는 237,734백만원(약 2,377억원)을 의미합니다.
+- 금액에는 천단위 콤마가 포함되어 있습니다. 예: "50,000"은 50,000백만원입니다.
 - 빈 셀(공백)은 해당 항목에 데이터가 없다는 의미입니다. 0이 아닙니다.
-- CSV 데이터의 숫자 값만을 기준으로 분석하세요. 빈 셀은 무시하세요.
-- 매출총이익률은 (매출총이익 / 실판가) * 1.1 * 100%로 계산됩니다. CSV에 이미 계산된 값이 포함되어 있습니다.
-- 직접비 항목들(로열티, 물류비, 보관료 등)의 값이 0.0으로 표시되면 실제로 0을 의미합니다. 빈 셀이 아닙니다.
-- CSV 데이터의 모든 숫자 값은 실제 데이터입니다. 0이 아닌 값이 있으면 반드시 그 값을 사용하여 분석하세요.
-- 직접비 분석 시: CSV에서 직접비 항목(로열티, 물류비, 보관료 등)에 숫자 값이 있으면 반드시 그 값을 언급하고 분석하세요. 빈 셀이 아닌 숫자 값이 있으면 "0으로 기록되어 있다"고 말하지 마세요.
-- 매출총이익률은 (매출총이익 / 실판가) * 1.1 * 100%로 계산됩니다. CSV에 이미 계산된 값이 포함되어 있습니다.
-- 직접비 항목들(로열티, 물류비, 보관료 등)의 값이 0.0으로 표시되면 실제로 0을 의미합니다. 빈 셀이 아닙니다.
+- 수익성 분석 시 비율(%)보다 금액(백만원) 변화를 중심으로 분석하세요.
+- 매출총이익, 직접이익, 영업이익 등은 모두 양수(+)일 때 이익, 음수(-)일 때 손실입니다.
 
 ${csvData}
 
 위 CSV 데이터를 기반으로 CEO에게 보고할 수 있는 수준의 인사이트를 존댓말로 작성해주세요. 다음 항목에 대해 각각 3줄씩 분석해주세요:
 
-1. 매출 트렌드 분석: 판매TAG, 실판가, 채널별 매출 성장 추이와 주요 요인
-2. 수익성 분석: 매출총이익률, 직접이익률, 영업이익률 변화 및 원인 분석
-3. 비용 구조 분석: 직접비(로열티, 물류비, 보관료 등)와 영업비(광고비, 인건비, 기타영업비 등)의 변화 추이
-4. 재고 및 발주 분석: 기말재고, 발주금액, 판매율 변화와 재고 효율성
-5. 채널별 성과 분석: 채널별 판매TAG와 실판가 비교를 통한 채널별 수익성
+1. 매출 트렌드 분석: 판매TAG, 실판가의 시즌별 금액 변화와 주요 요인
+2. 수익성 분석: 매출총이익, 직접이익, 영업이익의 금액 변화 추이 (금액 기준으로 분석)
+3. 비용 구조 분석: 직접비(로열티, 물류비, 보관료 등)와 영업비(광고비, 인건비, 기타영업비 등)의 금액 변화 추이
+4. 재고 및 발주 분석: 기말재고, 발주금액의 시즌별 변화와 재고 효율성
+5. 채널별 성과 분석: 채널별 판매TAG와 실판가 비교를 통한 채널별 성과
 6. 26SS 사업계획 시사점: 다음 시즌 계획 수립 시 고려해야 할 핵심 포인트 및 개선 방안
 
 각 항목을 3줄씩 작성해주세요. 한국어로 답변해주세요.
-중요: 응답에서 별표(**)나 볼드 표시를 사용하지 말고, 순수 텍스트로만 작성해주세요.`;
+중요: 응답에서 별표(**)나 볼드 표시를 사용하지 말고, 순수 텍스트로만 작성해주세요.
+금액을 언급할 때는 반드시 천단위 콤마를 포함하여 "000,000백만원" 형식으로 작성하세요.`;
 };
 
 export const SYSTEM_PROMPT = `당신은 패션 리테일 FP&A 담당자를 위한 사업계획 분석 어시스턴트입니다.
