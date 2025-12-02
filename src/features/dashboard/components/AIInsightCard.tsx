@@ -115,8 +115,8 @@ export const AIInsightCard = forwardRef<AIInsightCardRef, AIInsightCardProps>(
   }));
 
   return (
-    <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50">
-      <CardContent>
+    <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 w-full">
+      <CardContent className="pt-6 px-6 pb-6">
         {error && (
           <div className="flex items-start gap-2 p-4 bg-red-50 rounded-lg text-red-700">
             <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
@@ -150,7 +150,7 @@ export const AIInsightCard = forwardRef<AIInsightCardRef, AIInsightCardProps>(
 
         {insight && !loading && (
           <div className="prose prose-sm max-w-none text-slate-700">
-            <div className="whitespace-pre-wrap leading-relaxed">{insight}</div>
+            <div className="whitespace-pre-wrap leading-relaxed pt-2">{insight}</div>
           </div>
         )}
       </CardContent>
