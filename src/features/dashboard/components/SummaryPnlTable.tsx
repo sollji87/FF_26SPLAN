@@ -18,6 +18,7 @@ import { SalesChannelItem, CHANNEL_ORDER } from '../hooks/useSalesData';
 import { OperatingExpenseResponse } from '../hooks/useOperatingExpenseData';
 
 interface ChannelSalesData {
+  retailActSaleAmt?: number;  // 채널코드 3,4,5,7,11 실판가 합계 (로열티 계산용)
   total: number;
   channels: SalesChannelItem[];
 }
