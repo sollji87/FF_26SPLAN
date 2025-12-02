@@ -14,6 +14,8 @@ import { useSalesTagData, useActualSalesData, CHANNEL_ORDER, sortByChannelOrder 
 import { useOrderAmountData } from '../hooks/useOrderAmountData';
 import { useVatExcludedSalesData, VatExcludedSalesItem, calculateShippingPrice, RETAIL_CHANNELS } from '../hooks/useVatExcludedSalesData';
 import { useCostOfSalesData } from '../hooks/useCostOfSalesData';
+import { useDirectCostData } from '../hooks/useDirectCostData';
+import { useOperatingExpenseData } from '../hooks/useOperatingExpenseData';
 
 interface HistoricalTabProps {
   brand: Brand;
@@ -55,6 +57,16 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
   const { data: costOfSales23S } = useCostOfSalesData(brandCode, '23S');
   const { data: costOfSales24S } = useCostOfSalesData(brandCode, '24S');
   const { data: costOfSales25S } = useCostOfSalesData(brandCode, '25S');
+
+  // 직접비 데이터
+  const { data: directCost23S } = useDirectCostData(brandCode, '23S');
+  const { data: directCost24S } = useDirectCostData(brandCode, '24S');
+  const { data: directCost25S } = useDirectCostData(brandCode, '25S');
+
+  // 영업비 데이터
+  const { data: opExp23S } = useOperatingExpenseData(brandCode, '23S');
+  const { data: opExp24S } = useOperatingExpenseData(brandCode, '24S');
+  const { data: opExp25S } = useOperatingExpenseData(brandCode, '25S');
 
   // 기말재고 TAG금액 합계 계산 (아이템별 데이터만 합산, 시즌별 데이터 제외)
   const endStockTotals = {
@@ -102,15 +114,21 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
   const actualSalesData = {
     '23S': actualSales23S?.success ? { 
       total: actualSales23S.total, 
-      channels: sortByChannelOrder(actualSales23S.data) 
+      channels: sortByChannelOrder(actualSales23S.data),
+      chnlCdData: actualSales23S.chnlCdData,
+      retailActSaleAmt: actualSales23S.retailActSaleAmt,
     } : undefined,
     '24S': actualSales24S?.success ? { 
       total: actualSales24S.total, 
-      channels: sortByChannelOrder(actualSales24S.data) 
+      channels: sortByChannelOrder(actualSales24S.data),
+      chnlCdData: actualSales24S.chnlCdData,
+      retailActSaleAmt: actualSales24S.retailActSaleAmt,
     } : undefined,
     '25S': actualSales25S?.success ? { 
       total: actualSales25S.total, 
-      channels: sortByChannelOrder(actualSales25S.data) 
+      channels: sortByChannelOrder(actualSales25S.data),
+      chnlCdData: actualSales25S.chnlCdData,
+      retailActSaleAmt: actualSales25S.retailActSaleAmt,
     } : undefined,
   };
 
@@ -155,6 +173,29 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
     '25S': costOfSales25S?.success ? costOfSales25S.data : undefined,
   };
 
+  // 직접비 데이터
+  const directCostData = {
+    '23S': directCost23S?.success ? { 
+      totals: directCost23S.totals, 
+      channels: directCost23S.data 
+    } : undefined,
+    '24S': directCost24S?.success ? { 
+      totals: directCost24S.totals, 
+      channels: directCost24S.data 
+    } : undefined,
+    '25S': directCost25S?.success ? { 
+      totals: directCost25S.totals, 
+      channels: directCost25S.data 
+    } : undefined,
+  };
+
+  // 영업비 데이터
+  const operatingExpenseData = {
+    '23S': opExp23S?.success ? opExp23S : undefined,
+    '24S': opExp24S?.success ? opExp24S : undefined,
+    '25S': opExp25S?.success ? opExp25S : undefined,
+  };
+
   const handleToggleAll = () => {
     tableRef.current?.toggleAll();
   };
@@ -179,7 +220,6 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
         </div>
         <SummaryPnlTable
           ref={tableRef}
-          seasons={data.seasons}
           onExpandedAllChange={setExpandedAll}
           endStockData={endStockTotals}
           endStockDetails={endStockDetails}
@@ -188,6 +228,9 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
           orderAmountData={orderAmountData}
           vatExcSalesData={vatExcSalesData}
           costOfSalesData={costOfSalesData}
+          directCostData={directCostData}
+          operatingExpenseData={operatingExpenseData}
+          brandCode={brandCode}
         />
       </section>
 
