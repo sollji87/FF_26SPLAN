@@ -238,26 +238,25 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
         : undefined,
       directCost: directCostData['23S']?.totals
         ? {
-            royalty: directCostData['23S'].totals.RYT / 1000000,
-            logistics: directCostData['23S'].totals.LGT_CST / 1000000,
-            storage: directCostData['23S'].totals.STRG_CST / 1000000,
-            cardCommission: directCostData['23S'].totals.CARD_CMS / 1000000,
-            shopRent: directCostData['23S'].totals.SHOP_RNT / 1000000,
-            shopDepreciation: directCostData['23S'].totals.SHOP_DEPRC_CST / 1000000,
-            onlineCommission: directCostData['23S'].totals.ALNC_ONLN_CMS / 1000000,
-            storeManagerCommission: directCostData['23S'].totals.SM_CMS / 1000000,
-            dutyFreeCommission: directCostData['23S'].totals.DF_SALE_STFF_CMS / 1000000,
-            directlyManagedCommission: directCostData['23S'].totals.DMGMT_SALE_STFF_CMS / 1000000,
-            total: directCostData['23S'].totals.DIRECT_COST_TOTAL / 1000000,
+            royalty: directCostData['23S'].totals.RYT, // 이미 백만원 단위
+            logistics: directCostData['23S'].totals.LGT_CST,
+            storage: directCostData['23S'].totals.STRG_CST,
+            cardCommission: directCostData['23S'].totals.CARD_CMS,
+            shopRent: directCostData['23S'].totals.SHOP_RNT,
+            shopDepreciation: directCostData['23S'].totals.SHOP_DEPRC_CST,
+            onlineCommission: directCostData['23S'].totals.ALNC_ONLN_CMS,
+            storeManagerCommission: directCostData['23S'].totals.SM_CMS,
+            dutyFreeCommission: directCostData['23S'].totals.DF_SALE_STFF_CMS,
+            directlyManagedCommission: directCostData['23S'].totals.DMGMT_SALE_STFF_CMS,
+            total: directCostData['23S'].totals.DIRECT_COST_TOTAL,
           }
         : undefined,
       directProfit: vatExcSalesData['23S']?.total &&
         costOfSalesData['23S']?.cogsTotal &&
         directCostData['23S']?.totals
-        ? (vatExcSalesData['23S'].total -
+        ? (vatExcSalesData['23S'].total / 1000000) -
             costOfSalesData['23S'].cogsTotal -
-            directCostData['23S'].totals.DIRECT_COST_TOTAL) /
-          1000000
+            directCostData['23S'].totals.DIRECT_COST_TOTAL // 이미 백만원 단위
         : undefined,
       operatingExpense: operatingExpenseData['23S']
         ? {
@@ -307,26 +306,25 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
         : undefined,
       directCost: directCostData['24S']?.totals
         ? {
-            royalty: directCostData['24S'].totals.RYT / 1000000,
-            logistics: directCostData['24S'].totals.LGT_CST / 1000000,
-            storage: directCostData['24S'].totals.STRG_CST / 1000000,
-            cardCommission: directCostData['24S'].totals.CARD_CMS / 1000000,
-            shopRent: directCostData['24S'].totals.SHOP_RNT / 1000000,
-            shopDepreciation: directCostData['24S'].totals.SHOP_DEPRC_CST / 1000000,
-            onlineCommission: directCostData['24S'].totals.ALNC_ONLN_CMS / 1000000,
-            storeManagerCommission: directCostData['24S'].totals.SM_CMS / 1000000,
-            dutyFreeCommission: directCostData['24S'].totals.DF_SALE_STFF_CMS / 1000000,
-            directlyManagedCommission: directCostData['24S'].totals.DMGMT_SALE_STFF_CMS / 1000000,
-            total: directCostData['24S'].totals.DIRECT_COST_TOTAL / 1000000,
+            royalty: directCostData['24S'].totals.RYT, // 이미 백만원 단위
+            logistics: directCostData['24S'].totals.LGT_CST,
+            storage: directCostData['24S'].totals.STRG_CST,
+            cardCommission: directCostData['24S'].totals.CARD_CMS,
+            shopRent: directCostData['24S'].totals.SHOP_RNT,
+            shopDepreciation: directCostData['24S'].totals.SHOP_DEPRC_CST,
+            onlineCommission: directCostData['24S'].totals.ALNC_ONLN_CMS,
+            storeManagerCommission: directCostData['24S'].totals.SM_CMS,
+            dutyFreeCommission: directCostData['24S'].totals.DF_SALE_STFF_CMS,
+            directlyManagedCommission: directCostData['24S'].totals.DMGMT_SALE_STFF_CMS,
+            total: directCostData['24S'].totals.DIRECT_COST_TOTAL,
           }
         : undefined,
       directProfit: vatExcSalesData['24S']?.total &&
         costOfSalesData['24S']?.cogsTotal &&
         directCostData['24S']?.totals
-        ? (vatExcSalesData['24S'].total -
+        ? (vatExcSalesData['24S'].total / 1000000) -
             costOfSalesData['24S'].cogsTotal -
-            directCostData['24S'].totals.DIRECT_COST_TOTAL) /
-          1000000
+            directCostData['24S'].totals.DIRECT_COST_TOTAL // 이미 백만원 단위
         : undefined,
       operatingExpense: operatingExpenseData['24S']
         ? {
@@ -376,26 +374,25 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
         : undefined,
       directCost: directCostData['25S']?.totals
         ? {
-            royalty: directCostData['25S'].totals.RYT / 1000000,
-            logistics: directCostData['25S'].totals.LGT_CST / 1000000,
-            storage: directCostData['25S'].totals.STRG_CST / 1000000,
-            cardCommission: directCostData['25S'].totals.CARD_CMS / 1000000,
-            shopRent: directCostData['25S'].totals.SHOP_RNT / 1000000,
-            shopDepreciation: directCostData['25S'].totals.SHOP_DEPRC_CST / 1000000,
-            onlineCommission: directCostData['25S'].totals.ALNC_ONLN_CMS / 1000000,
-            storeManagerCommission: directCostData['25S'].totals.SM_CMS / 1000000,
-            dutyFreeCommission: directCostData['25S'].totals.DF_SALE_STFF_CMS / 1000000,
-            directlyManagedCommission: directCostData['25S'].totals.DMGMT_SALE_STFF_CMS / 1000000,
-            total: directCostData['25S'].totals.DIRECT_COST_TOTAL / 1000000,
+            royalty: directCostData['25S'].totals.RYT, // 이미 백만원 단위
+            logistics: directCostData['25S'].totals.LGT_CST,
+            storage: directCostData['25S'].totals.STRG_CST,
+            cardCommission: directCostData['25S'].totals.CARD_CMS,
+            shopRent: directCostData['25S'].totals.SHOP_RNT,
+            shopDepreciation: directCostData['25S'].totals.SHOP_DEPRC_CST,
+            onlineCommission: directCostData['25S'].totals.ALNC_ONLN_CMS,
+            storeManagerCommission: directCostData['25S'].totals.SM_CMS,
+            dutyFreeCommission: directCostData['25S'].totals.DF_SALE_STFF_CMS,
+            directlyManagedCommission: directCostData['25S'].totals.DMGMT_SALE_STFF_CMS,
+            total: directCostData['25S'].totals.DIRECT_COST_TOTAL,
           }
         : undefined,
       directProfit: vatExcSalesData['25S']?.total &&
         costOfSalesData['25S']?.cogsTotal &&
         directCostData['25S']?.totals
-        ? (vatExcSalesData['25S'].total -
+        ? (vatExcSalesData['25S'].total / 1000000) -
             costOfSalesData['25S'].cogsTotal -
-            directCostData['25S'].totals.DIRECT_COST_TOTAL) /
-          1000000
+            directCostData['25S'].totals.DIRECT_COST_TOTAL // 이미 백만원 단위
         : undefined,
       operatingExpense: operatingExpenseData['25S']
         ? {
