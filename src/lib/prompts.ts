@@ -67,18 +67,40 @@ export const buildHistoricalPrompt = (input: HistoricalInsightInput): string => 
     return { percent: undefined };
   });
   
-  // 직접비
-  addRow('로열티', (d) => ({ value: d.directCost?.royalty }));
-  addRow('물류비', (d) => ({ value: d.directCost?.logistics }));
-  addRow('보관료', (d) => ({ value: d.directCost?.storage }));
-  addRow('카드수수료', (d) => ({ value: d.directCost?.cardCommission }));
-  addRow('매장임차료', (d) => ({ value: d.directCost?.shopRent }));
-  addRow('감가상각비(매장)', (d) => ({ value: d.directCost?.shopDepreciation }));
-  addRow('온라인수수료(제휴)', (d) => ({ value: d.directCost?.onlineCommission }));
-  addRow('중간관리자 수수료', (d) => ({ value: d.directCost?.storeManagerCommission }));
-  addRow('면세 판매직수수료', (d) => ({ value: d.directCost?.dutyFreeCommission }));
-  addRow('직영 판매직수수료', (d) => ({ value: d.directCost?.directlyManagedCommission }));
-  addRow('직접비 합계', (d) => ({ value: d.directCost?.total }));
+  // 직접비 (0이 아닌 값이 있으면 반드시 표시)
+  addRow('로열티', (d) => ({ 
+    value: d.directCost?.royalty !== undefined ? d.directCost.royalty : undefined 
+  }));
+  addRow('물류비', (d) => ({ 
+    value: d.directCost?.logistics !== undefined ? d.directCost.logistics : undefined 
+  }));
+  addRow('보관료', (d) => ({ 
+    value: d.directCost?.storage !== undefined ? d.directCost.storage : undefined 
+  }));
+  addRow('카드수수료', (d) => ({ 
+    value: d.directCost?.cardCommission !== undefined ? d.directCost.cardCommission : undefined 
+  }));
+  addRow('매장임차료', (d) => ({ 
+    value: d.directCost?.shopRent !== undefined ? d.directCost.shopRent : undefined 
+  }));
+  addRow('감가상각비(매장)', (d) => ({ 
+    value: d.directCost?.shopDepreciation !== undefined ? d.directCost.shopDepreciation : undefined 
+  }));
+  addRow('온라인수수료(제휴)', (d) => ({ 
+    value: d.directCost?.onlineCommission !== undefined ? d.directCost.onlineCommission : undefined 
+  }));
+  addRow('중간관리자 수수료', (d) => ({ 
+    value: d.directCost?.storeManagerCommission !== undefined ? d.directCost.storeManagerCommission : undefined 
+  }));
+  addRow('면세 판매직수수료', (d) => ({ 
+    value: d.directCost?.dutyFreeCommission !== undefined ? d.directCost.dutyFreeCommission : undefined 
+  }));
+  addRow('직영 판매직수수료', (d) => ({ 
+    value: d.directCost?.directlyManagedCommission !== undefined ? d.directCost.directlyManagedCommission : undefined 
+  }));
+  addRow('직접비 합계', (d) => ({ 
+    value: d.directCost?.total !== undefined ? d.directCost.total : undefined 
+  }));
   addRow('직접이익', (d) => ({ value: d.directProfit }));
   addRow('직접이익률', (d) => ({ 
     percent: d.actualSales && d.directProfit ? (d.directProfit / d.actualSales) * 100 : undefined 
@@ -141,6 +163,7 @@ export const buildHistoricalPrompt = (input: HistoricalInsightInput): string => 
 - 매출총이익률은 (매출총이익 / 실판가) * 1.1 * 100%로 계산됩니다. CSV에 이미 계산된 값이 포함되어 있습니다.
 - 직접비 항목들(로열티, 물류비, 보관료 등)의 값이 0.0으로 표시되면 실제로 0을 의미합니다. 빈 셀이 아닙니다.
 - CSV 데이터의 모든 숫자 값은 실제 데이터입니다. 0이 아닌 값이 있으면 반드시 그 값을 사용하여 분석하세요.
+- 직접비 분석 시: CSV에서 직접비 항목(로열티, 물류비, 보관료 등)에 숫자 값이 있으면 반드시 그 값을 언급하고 분석하세요. 빈 셀이 아닌 숫자 값이 있으면 "0으로 기록되어 있다"고 말하지 마세요.
 - 매출총이익률은 (매출총이익 / 실판가) * 1.1 * 100%로 계산됩니다. CSV에 이미 계산된 값이 포함되어 있습니다.
 - 직접비 항목들(로열티, 물류비, 보관료 등)의 값이 0.0으로 표시되면 실제로 0을 의미합니다. 빈 셀이 아닙니다.
 

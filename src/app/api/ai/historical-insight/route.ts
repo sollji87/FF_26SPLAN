@@ -29,27 +29,44 @@ export async function POST(req: Request) {
     }
 
     const client = new OpenAI({ apiKey });
-    const prompt = buildHistoricalPrompt({ brand, brandKo, pnlData });
-
-    // 디버깅: 주요 데이터 확인
-    console.log('Data check:', {
+    
+    // 디버깅: 주요 데이터 확인 (직접비 상세)
+    console.log('Data check - Direct Cost:', {
       '23S': {
-        grossProfit: pnlData['23S']?.grossProfit,
-        directCostTotal: pnlData['23S']?.directCost?.total,
+        directCost: pnlData['23S']?.directCost,
+        hasDirectCost: !!pnlData['23S']?.directCost,
         royalty: pnlData['23S']?.directCost?.royalty,
         logistics: pnlData['23S']?.directCost?.logistics,
-        actualSales: pnlData['23S']?.actualSales,
-        cogsTotal: pnlData['23S']?.cogsTotal,
+        total: pnlData['23S']?.directCost?.total,
+      },
+      '24S': {
+        directCost: pnlData['24S']?.directCost,
+        hasDirectCost: !!pnlData['24S']?.directCost,
+        royalty: pnlData['24S']?.directCost?.royalty,
+        logistics: pnlData['24S']?.directCost?.logistics,
+        total: pnlData['24S']?.directCost?.total,
       },
       '25S': {
-        grossProfit: pnlData['25S']?.grossProfit,
-        directCostTotal: pnlData['25S']?.directCost?.total,
+        directCost: pnlData['25S']?.directCost,
+        hasDirectCost: !!pnlData['25S']?.directCost,
         royalty: pnlData['25S']?.directCost?.royalty,
         logistics: pnlData['25S']?.directCost?.logistics,
-        actualSales: pnlData['25S']?.actualSales,
-        cogsTotal: pnlData['25S']?.cogsTotal,
+        total: pnlData['25S']?.directCost?.total,
       },
     });
+    
+    const prompt = buildHistoricalPrompt({ brand, brandKo, pnlData });
+    
+    // CSV 데이터 샘플 확인 (직접비 부분)
+    const directCostLines = prompt.split('\n').filter(line => 
+      line.includes('로열티') || 
+      line.includes('물류비') || 
+      line.includes('보관료') || 
+      line.includes('직접비 합계')
+    );
+    if (directCostLines.length > 0) {
+      console.log('CSV Direct Cost Lines:', directCostLines.slice(0, 5).join('\n'));
+    }
 
     console.log('Calling OpenAI API...', { model: 'gpt-4o-mini', promptLength: prompt.length });
 
