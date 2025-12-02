@@ -225,16 +225,16 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
         : undefined,
       vatExcSales: vatExcSalesData['23S']?.total ? vatExcSalesData['23S'].total / 1000000 : undefined,
       shippingPrice: vatExcSalesData['23S']?.shippingTotal ? vatExcSalesData['23S'].shippingTotal / 1000000 : undefined,
-      cogs: costOfSalesData['23S']?.cogs ? costOfSalesData['23S'].cogs / 1000000 : undefined,
-      inventoryValuationReversal: costOfSalesData['23S']?.inventoryValuationReversal
-        ? costOfSalesData['23S'].inventoryValuationReversal / 1000000
+      cogs: costOfSalesData['23S']?.cogsActual ? costOfSalesData['23S'].cogsActual : undefined,
+      inventoryValuationReversal: costOfSalesData['23S']?.stkAsstAprctAmt
+        ? costOfSalesData['23S'].stkAsstAprctAmt
         : undefined,
-      inventoryValuationAddition: costOfSalesData['23S']?.inventoryValuationAddition
-        ? costOfSalesData['23S'].inventoryValuationAddition / 1000000
+      inventoryValuationAddition: costOfSalesData['23S']?.vltnAmt
+        ? costOfSalesData['23S'].vltnAmt
         : undefined,
-      cogsTotal: costOfSalesData['23S']?.cogsTotal ? costOfSalesData['23S'].cogsTotal / 1000000 : undefined,
+      cogsTotal: costOfSalesData['23S']?.cogsTotal ? costOfSalesData['23S'].cogsTotal : undefined,
       grossProfit: vatExcSalesData['23S']?.total && costOfSalesData['23S']?.cogsTotal
-        ? (vatExcSalesData['23S'].total - costOfSalesData['23S'].cogsTotal) / 1000000
+        ? (vatExcSalesData['23S'].total / 1000000) - costOfSalesData['23S'].cogsTotal
         : undefined,
       directCost: directCostData['23S']?.totals
         ? {
@@ -280,8 +280,8 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
             operatingExpenseData['23S'].total.amt) /
           1000000
         : undefined,
-      salesTagChannels: salesTagData['23S']?.channels,
-      actualSalesChannels: actualSalesData['23S']?.channels,
+      salesTagChannels: salesTagData['23S']?.channels?.map(ch => ({ CHNL_NM: ch.CHNL_NM, SALE_TAG_AMT: ch.SALE_TAG_AMT || 0 })),
+      actualSalesChannels: actualSalesData['23S']?.channels?.map(ch => ({ CHNL_NM: ch.CHNL_NM, ACT_SALE_AMT: ch.ACT_SALE_AMT || 0 })),
     },
     '24S': {
       endStock: endStockTotals['24S'] ? endStockTotals['24S'] / 1000000 : undefined,
@@ -294,16 +294,16 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
         : undefined,
       vatExcSales: vatExcSalesData['24S']?.total ? vatExcSalesData['24S'].total / 1000000 : undefined,
       shippingPrice: vatExcSalesData['24S']?.shippingTotal ? vatExcSalesData['24S'].shippingTotal / 1000000 : undefined,
-      cogs: costOfSalesData['24S']?.cogs ? costOfSalesData['24S'].cogs / 1000000 : undefined,
-      inventoryValuationReversal: costOfSalesData['24S']?.inventoryValuationReversal
-        ? costOfSalesData['24S'].inventoryValuationReversal / 1000000
+      cogs: costOfSalesData['24S']?.cogsActual ? costOfSalesData['24S'].cogsActual : undefined,
+      inventoryValuationReversal: costOfSalesData['24S']?.stkAsstAprctAmt
+        ? costOfSalesData['24S'].stkAsstAprctAmt
         : undefined,
-      inventoryValuationAddition: costOfSalesData['24S']?.inventoryValuationAddition
-        ? costOfSalesData['24S'].inventoryValuationAddition / 1000000
+      inventoryValuationAddition: costOfSalesData['24S']?.vltnAmt
+        ? costOfSalesData['24S'].vltnAmt
         : undefined,
-      cogsTotal: costOfSalesData['24S']?.cogsTotal ? costOfSalesData['24S'].cogsTotal / 1000000 : undefined,
+      cogsTotal: costOfSalesData['24S']?.cogsTotal ? costOfSalesData['24S'].cogsTotal : undefined,
       grossProfit: vatExcSalesData['24S']?.total && costOfSalesData['24S']?.cogsTotal
-        ? (vatExcSalesData['24S'].total - costOfSalesData['24S'].cogsTotal) / 1000000
+        ? (vatExcSalesData['24S'].total / 1000000) - costOfSalesData['24S'].cogsTotal
         : undefined,
       directCost: directCostData['24S']?.totals
         ? {
@@ -349,8 +349,8 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
             operatingExpenseData['24S'].total.amt) /
           1000000
         : undefined,
-      salesTagChannels: salesTagData['24S']?.channels,
-      actualSalesChannels: actualSalesData['24S']?.channels,
+      salesTagChannels: salesTagData['24S']?.channels?.map(ch => ({ CHNL_NM: ch.CHNL_NM, SALE_TAG_AMT: ch.SALE_TAG_AMT || 0 })),
+      actualSalesChannels: actualSalesData['24S']?.channels?.map(ch => ({ CHNL_NM: ch.CHNL_NM, ACT_SALE_AMT: ch.ACT_SALE_AMT || 0 })),
     },
     '25S': {
       endStock: endStockTotals['25S'] ? endStockTotals['25S'] / 1000000 : undefined,
@@ -363,16 +363,16 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
         : undefined,
       vatExcSales: vatExcSalesData['25S']?.total ? vatExcSalesData['25S'].total / 1000000 : undefined,
       shippingPrice: vatExcSalesData['25S']?.shippingTotal ? vatExcSalesData['25S'].shippingTotal / 1000000 : undefined,
-      cogs: costOfSalesData['25S']?.cogs ? costOfSalesData['25S'].cogs / 1000000 : undefined,
-      inventoryValuationReversal: costOfSalesData['25S']?.inventoryValuationReversal
-        ? costOfSalesData['25S'].inventoryValuationReversal / 1000000
+      cogs: costOfSalesData['25S']?.cogsActual ? costOfSalesData['25S'].cogsActual : undefined,
+      inventoryValuationReversal: costOfSalesData['25S']?.stkAsstAprctAmt
+        ? costOfSalesData['25S'].stkAsstAprctAmt
         : undefined,
-      inventoryValuationAddition: costOfSalesData['25S']?.inventoryValuationAddition
-        ? costOfSalesData['25S'].inventoryValuationAddition / 1000000
+      inventoryValuationAddition: costOfSalesData['25S']?.vltnAmt
+        ? costOfSalesData['25S'].vltnAmt
         : undefined,
-      cogsTotal: costOfSalesData['25S']?.cogsTotal ? costOfSalesData['25S'].cogsTotal / 1000000 : undefined,
+      cogsTotal: costOfSalesData['25S']?.cogsTotal ? costOfSalesData['25S'].cogsTotal : undefined,
       grossProfit: vatExcSalesData['25S']?.total && costOfSalesData['25S']?.cogsTotal
-        ? (vatExcSalesData['25S'].total - costOfSalesData['25S'].cogsTotal) / 1000000
+        ? (vatExcSalesData['25S'].total / 1000000) - costOfSalesData['25S'].cogsTotal
         : undefined,
       directCost: directCostData['25S']?.totals
         ? {
@@ -418,8 +418,8 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
             operatingExpenseData['25S'].total.amt) /
           1000000
         : undefined,
-      salesTagChannels: salesTagData['25S']?.channels,
-      actualSalesChannels: actualSalesData['25S']?.channels,
+      salesTagChannels: salesTagData['25S']?.channels?.map(ch => ({ CHNL_NM: ch.CHNL_NM, SALE_TAG_AMT: ch.SALE_TAG_AMT || 0 })),
+      actualSalesChannels: actualSalesData['25S']?.channels?.map(ch => ({ CHNL_NM: ch.CHNL_NM, ACT_SALE_AMT: ch.ACT_SALE_AMT || 0 })),
     },
   };
 
