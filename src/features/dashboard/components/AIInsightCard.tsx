@@ -85,14 +85,25 @@ export const AIInsightCard = forwardRef<AIInsightCardRef, AIInsightCardProps>(
       });
 
       if (!response.ok) {
-        throw new Error('AI 인사이트 생성에 실패했습니다.');
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || `HTTP ${response.status}: ${response.statusText}`;
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
       setInsight(data.insight);
       onInsightChange?.(data.insight);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : '알 수 없는 오류가 발생했습니다.';
+      console.error('AI Insight Error:', err);
+      setError(errorMessage);
     } finally {
       setLoading(false);
       onLoadingChange?.(false);
