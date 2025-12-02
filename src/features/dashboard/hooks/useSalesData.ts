@@ -9,11 +9,20 @@ export interface SalesChannelItem {
   YOY: number | null;
 }
 
+export interface ChnlCdItem {
+  CHNL_NM: string;
+  CHNL_CD: string;
+  ACT_SALE_AMT?: number;
+}
+
 export interface SalesDataResponse {
   success: boolean;
   data: SalesChannelItem[];
+  channels?: SalesChannelItem[];
+  chnlCdData?: ChnlCdItem[];  // 채널코드별 실판가 데이터
   total: number;
   totalYOY: number | null;
+  retailActSaleAmt?: number;  // 채널코드 3,4,5,7,11 실판가 합계 (로열티 계산용)
   params: {
     brandCode: string;
     season: string;
@@ -69,6 +78,7 @@ export const CHANNEL_ORDER = [
   '온라인(제휴)',
   '면세점',
   'RF',
+  '아울렛(직)',
   '사입',
   '기타',
 ];

@@ -375,7 +375,7 @@ export const SummaryPnlTable = forwardRef<SummaryPnlTableRef, SummaryPnlTablePro
           {/* 발주금액(당시즌의류) - 항상 표시 */}
           <TableRow>
             <TableCell className="font-semibold text-slate-900">
-              발주금액(당시즌의류)
+              당시즌의류 발주액 (판매율)
             </TableCell>
             {seasons.map((season) => {
               const orderData = orderAmountData?.[season.season as '23S' | '24S' | '25S'];
@@ -388,7 +388,7 @@ export const SummaryPnlTable = forwardRef<SummaryPnlTableRef, SummaryPnlTablePro
                   </TableCell>
                   <TableCell className="text-right">
                     <span className="text-xs text-slate-600">
-                      판매율 {salesRate.toFixed(1)}%
+                      {salesRate.toFixed(1)}%
                     </span>
                   </TableCell>
                 </Fragment>

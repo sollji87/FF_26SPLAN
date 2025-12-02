@@ -17,12 +17,12 @@ export default function Home() {
               <div>
                 <h1 className="text-3xl font-bold text-slate-900">
                   F&F 26SS 사업계획 네비게이터
-                </h1>
+          </h1>
                 <p className="text-sm text-slate-500 mt-1">
                   브랜드별 실적 분석 및 사업계획 시뮬레이션
                 </p>
-              </div>
-            </div>
+        </div>
+      </div>
             <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
               <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
               <span className="text-sm text-slate-600 font-medium">
@@ -39,8 +39,8 @@ export default function Home() {
               <p className="text-sm text-slate-500 mt-1">
                 분석할 브랜드를 선택하세요
               </p>
-            </div>
-          </div>
+      </div>
+    </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
             {BRANDS.map((brand) => (

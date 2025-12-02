@@ -1,18 +1,69 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useState, useImperativeHandle, forwardRef } from 'react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Brand } from '../constants/brands';
-import { SeasonData } from '../constants/mockData';
-import { Sparkles, RefreshCw, AlertCircle } from 'lucide-react';
+import { RefreshCw, AlertCircle, Sparkles } from 'lucide-react';
+
+interface PnlData {
+  endStock?: number;
+  orderAmount?: number;
+  salesRate?: number;
+  salesTag?: number;
+  actualSales?: number;
+  discountRate?: number;
+  vatExcSales?: number;
+  shippingPrice?: number;
+  cogs?: number;
+  inventoryValuationReversal?: number;
+  inventoryValuationAddition?: number;
+  cogsTotal?: number;
+  grossProfit?: number;
+  directCost?: {
+    royalty?: number;
+    logistics?: number;
+    storage?: number;
+    cardCommission?: number;
+    shopRent?: number;
+    shopDepreciation?: number;
+    onlineCommission?: number;
+    storeManagerCommission?: number;
+    dutyFreeCommission?: number;
+    directlyManagedCommission?: number;
+    total?: number;
+  };
+  directProfit?: number;
+  operatingExpense?: {
+    adExpense?: number;
+    hrCost?: number;
+    etcTotal?: number;
+    selfRent?: number;
+    commonCost?: number;
+    mfcIndirect?: number;
+    total?: number;
+  };
+  operatingProfit?: number;
+  salesTagChannels?: Array<{ CHNL_NM: string; SALE_TAG_AMT: number }>;
+  actualSalesChannels?: Array<{ CHNL_NM: string; ACT_SALE_AMT: number }>;
+}
 
 interface AIInsightCardProps {
   brand: Brand;
-  seasons: SeasonData[];
+  pnlData: {
+    '23S'?: PnlData;
+    '24S'?: PnlData;
+    '25S'?: PnlData;
+  };
+  onLoadingChange?: (loading: boolean) => void;
+  onInsightChange?: (insight: string | null) => void;
 }
 
-export const AIInsightCard = ({ brand, seasons }: AIInsightCardProps) => {
+export interface AIInsightCardRef {
+  fetchInsight: () => void;
+}
+
+export const AIInsightCard = forwardRef<AIInsightCardRef, AIInsightCardProps>(
+  ({ brand, pnlData, onLoadingChange, onInsightChange }, ref) => {
   const [insight, setInsight] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,6 +71,7 @@ export const AIInsightCard = ({ brand, seasons }: AIInsightCardProps) => {
   const fetchInsight = async () => {
     setLoading(true);
     setError(null);
+    onLoadingChange?.(true);
 
     try {
       const response = await fetch('/api/ai/historical-insight', {
@@ -28,7 +80,7 @@ export const AIInsightCard = ({ brand, seasons }: AIInsightCardProps) => {
         body: JSON.stringify({
           brand: brand.name,
           brandKo: brand.nameKo,
-          seasons,
+          pnlData,
         }),
       });
 
@@ -38,47 +90,21 @@ export const AIInsightCard = ({ brand, seasons }: AIInsightCardProps) => {
 
       const data = await response.json();
       setInsight(data.insight);
+      onInsightChange?.(data.insight);
     } catch (err) {
       setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
     } finally {
       setLoading(false);
+      onLoadingChange?.(false);
     }
   };
 
+  useImperativeHandle(ref, () => ({
+    fetchInsight,
+  }));
+
   return (
     <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-amber-800">
-            <Sparkles className="w-5 h-5" />
-            <span>AI 기반 실적 분석 인사이트</span>
-          </div>
-          <Button
-            onClick={fetchInsight}
-            disabled={loading}
-            size="sm"
-            variant="outline"
-            className="gap-2 border-amber-300 hover:bg-amber-100"
-          >
-            {loading ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                분석 중...
-              </>
-            ) : insight ? (
-              <>
-                <RefreshCw className="w-4 h-4" />
-                다시 분석
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4" />
-                인사이트 생성
-              </>
-            )}
-          </Button>
-        </CardTitle>
-      </CardHeader>
       <CardContent>
         {error && (
           <div className="flex items-start gap-2 p-4 bg-red-50 rounded-lg text-red-700">
@@ -119,7 +145,7 @@ export const AIInsightCard = ({ brand, seasons }: AIInsightCardProps) => {
       </CardContent>
     </Card>
   );
-};
+});
 
 
 

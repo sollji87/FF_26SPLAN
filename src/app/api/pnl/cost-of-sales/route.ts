@@ -43,70 +43,79 @@ export async function GET(request: NextRequest) {
       ? `and not (p.sesn = '21S' and p.middle_class_cd in ('A0100A0140'))` 
       : '';
 
-    // 1. 재고평가감(환입) - stk_asst_aprct_amt
-    // 2. 재고평가감(추가) - vltn_amt
+    // 재고평가감(환입): stk_asst_aprct_amt
+    // 재고평가감(추가): vltn_amt
     // dw_copa_d 테이블은 pst_dt (DATE)를 사용
     const inventoryValuationQuery = `
-select 
-    round(sum(coalesce(a.stk_asst_aprct_amt, 0)) / 1000000) as stk_asst_aprct_amt,
-    round(sum(coalesce(a.vltn_amt, 0)) / 1000000) as vltn_amt
-from sap_fnf.dw_copa_d a
-join sap_fnf.mst_prdt p on a.prdt_cd = p.prdt_cd
-where a.brd_cd = '${brandCode}'
-  and a.chnl_cd != '9'
-  and a.chnl_cd is not null
-  and a.pst_dt between '${periodStartDate}' and '${periodEndDate}'
+SELECT 
+    ROUND(SUM(COALESCE(a.stk_asst_aprct_amt, 0)) / 1000000) AS stk_asst_aprct_amt,
+    ROUND(SUM(COALESCE(a.vltn_amt, 0)) / 1000000) AS vltn_amt
+FROM sap_fnf.dw_copa_d a
+JOIN sap_fnf.mst_prdt p ON a.prdt_cd = p.prdt_cd
+WHERE a.brd_cd = '${brandCode}'
+  AND a.chnl_cd != '9'
+  AND a.chnl_cd IS NOT NULL
+  AND a.pst_dt BETWEEN '${periodStartDate}' AND '${periodEndDate}'
   ${mlbExcludeCondition}
 `;
 
     // 3. COGS (매출원가 기초) - 당시즌 의류는 전년 1월부터
+    // dw_copa_d 테이블의 ACT_COGS 사용
     const cogsQuery = `
-with cy_item as (
-    select a.prdt_cd  
-            , a.sesn
-            , a.prdt_hrrc1_nm
-            , case when ('${periodEnd}' between b.start_yyyymm and b.end_yyyymm) and prdt_hrrc1_nm = '의류' 
-                        then '당시즌 의류'
-                    when ('${periodStart}' between b.start_yyyymm and b.end_yyyymm) and prdt_hrrc1_nm = '의류'
-                        then '전시즌 의류'
-                    when (b.start_yyyymm > '${periodEnd}') and prdt_hrrc1_nm = '의류' 
-                        then '차기시즌 의류'
-                    when (b.start_yyyymm < '${periodStart}') and prdt_hrrc1_nm = '의류'
-                        then '과시즌 의류'
-                    when prdt_hrrc1_nm='ACC' then 'ACC'
-                    else '기타' end as item_std
-    from sap_fnf.mst_prdt a
-    left join comm.mst_sesn b
-        on a.sesn = b.sesn
-    where 1=1
-        and brd_cd = '${brandCode}'
+-- 당시즌 의류 구분
+WITH cy_item AS (
+    SELECT a.prdt_cd  
+         , a.sesn
+         , a.prdt_hrrc1_nm
+         , CASE 
+                WHEN ('${periodEnd}'   BETWEEN b.start_yyyymm AND b.end_yyyymm) AND prdt_hrrc1_nm = '의류' 
+                    THEN '당시즌 의류'
+                WHEN ('${periodStart}' BETWEEN b.start_yyyymm AND b.end_yyyymm) AND prdt_hrrc1_nm = '의류'
+                    THEN '전시즌 의류'
+                WHEN (b.start_yyyymm > '${periodEnd}')   AND prdt_hrrc1_nm = '의류' 
+                    THEN '차기시즌 의류'
+                WHEN (b.start_yyyymm < '${periodStart}') AND prdt_hrrc1_nm = '의류'
+                    THEN '과시즌 의류'
+                WHEN prdt_hrrc1_nm = 'ACC' THEN 'ACC'
+                ELSE '기타' 
+           END AS item_std
+    FROM sap_fnf.mst_prdt a
+    LEFT JOIN comm.mst_sesn b
+           ON a.sesn = b.sesn
+    WHERE 1=1
+      AND a.brd_cd = '${brandCode}'
 )
--- 당시즌 의류 COGS (전년 1월부터 시즌 종료까지)
-, current_season_cogs as (
-    select round(sum(coalesce(a.cogs, 0)) / 1000000) as cogs
-    from sap_fnf.dm_pl_shop_prdt_m a
-    join cy_item c on a.prdt_cd = c.prdt_cd
-    where a.brd_cd = '${brandCode}'
-      and a.corp_cd = '1000'
-      and a.chnl_cd not in ('9')
-      and a.chnl_cd is not null
-      and a.pst_yyyymm between '${currentSeasonStart}' and '${periodEnd}'
-      and c.item_std = '당시즌 의류'
+-- 당시즌 의류 COGS (전년 1월부터 시즌 종료까지) - dw_copa_d / ACT_COGS 기준
+, current_season_cogs AS (
+    SELECT 
+        ROUND(SUM(COALESCE(a.act_cogs, 0)) / 1000000) AS cogs
+    FROM sap_fnf.dw_copa_d a
+    JOIN cy_item c 
+      ON a.prdt_cd = c.prdt_cd
+    WHERE a.brd_cd  = '${brandCode}'
+      AND a.corp_cd = '1000'
+      AND a.chnl_cd NOT IN ('9')
+      AND a.chnl_cd IS NOT NULL
+      AND TO_CHAR(a.pst_dt, 'YYYYMM') BETWEEN '${currentSeasonStart}' AND '${periodEnd}'
+      AND c.item_std = '당시즌 의류'
 )
--- 과시즌/전시즌/ACC COGS (시즌 기간 내)
-, other_cogs as (
-    select round(sum(coalesce(a.cogs, 0)) / 1000000) as cogs
-    from sap_fnf.dm_pl_shop_prdt_m a
-    join cy_item c on a.prdt_cd = c.prdt_cd
-    where a.brd_cd = '${brandCode}'
-      and a.corp_cd = '1000'
-      and a.chnl_cd not in ('9')
-      and a.chnl_cd is not null
-      and a.pst_yyyymm between '${periodStart}' and '${periodEnd}'
-      and c.item_std not in ('당시즌 의류', '차기시즌 의류')
+-- 과시즌/전시즌/ACC COGS (시즌 기간 내) - dw_copa_d / ACT_COGS 기준
+, other_cogs AS (
+    SELECT 
+        ROUND(SUM(COALESCE(a.act_cogs, 0)) / 1000000) AS cogs
+    FROM sap_fnf.dw_copa_d a
+    JOIN cy_item c 
+      ON a.prdt_cd = c.prdt_cd
+    WHERE a.brd_cd  = '${brandCode}'
+      AND a.corp_cd = '1000'
+      AND a.chnl_cd NOT IN ('9')
+      AND a.chnl_cd IS NOT NULL
+      AND TO_CHAR(a.pst_dt, 'YYYYMM') BETWEEN '${periodStart}' AND '${periodEnd}'
+      AND c.item_std NOT IN ('당시즌 의류', '차기시즌 의류')
 )
-select 
-    coalesce((select cogs from current_season_cogs), 0) + coalesce((select cogs from other_cogs), 0) as total_cogs
+SELECT 
+    COALESCE((SELECT cogs FROM current_season_cogs), 0) 
+  + COALESCE((SELECT cogs FROM other_cogs), 0) AS total_cogs
 `;
 
     // 쿼리 실행

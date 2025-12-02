@@ -14,9 +14,9 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { brand, brandKo, seasons } = body;
+    const { brand, brandKo, pnlData } = body;
 
-    if (!brand || !seasons || !Array.isArray(seasons)) {
+    if (!brand || !pnlData) {
       return NextResponse.json(
         { error: '유효하지 않은 요청입니다.' },
         { status: 400 }
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     }
 
     const client = new OpenAI({ apiKey });
-    const prompt = buildHistoricalPrompt({ brand, brandKo, seasons });
+    const prompt = buildHistoricalPrompt({ brand, brandKo, pnlData });
 
     const completion = await client.chat.completions.create({
       model: 'gpt-4o-mini',

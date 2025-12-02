@@ -122,6 +122,7 @@ with cy_item as (
             when a.chnl_cd = '99' then '기타'
             else b.mgmt_chnl_nm
          end as chnl_nm
+         , a.chnl_cd
          , sum(a.act_sale_amt) as act_sale_amt
     from sap_fnf.dm_pl_shop_prdt_m a
     join sap_fnf.mst_shop b
@@ -134,7 +135,7 @@ with cy_item as (
       and a.chnl_cd is not null
       and a.pst_yyyymm between '${currentSeasonStart}' and '${periodEnd}'
       and c.item_std = '당시즌 의류'
-    group by 1
+    group by 1, 2
 )
 , other_sales_cy as (
     select case 
@@ -149,6 +150,7 @@ with cy_item as (
             when a.chnl_cd = '99' then '기타'
             else b.mgmt_chnl_nm
          end as chnl_nm
+         , a.chnl_cd
          , sum(a.act_sale_amt) as act_sale_amt
     from sap_fnf.dm_pl_shop_prdt_m a
     join sap_fnf.mst_shop b
@@ -161,7 +163,7 @@ with cy_item as (
       and a.chnl_cd is not null
       and a.pst_yyyymm between '${periodStart}' and '${periodEnd}'
       and c.item_std not in ('당시즌 의류', '차기시즌 의류')
-    group by 1
+    group by 1, 2
 )
 , current_season_apparel_py as (
     select case 
@@ -218,9 +220,9 @@ with cy_item as (
     group by 1
 )
 , cy_combined as (
-    select chnl_nm, act_sale_amt from current_season_apparel_cy
+    select chnl_nm, chnl_cd, act_sale_amt from current_season_apparel_cy
     union all
-    select chnl_nm, act_sale_amt from other_sales_cy
+    select chnl_nm, chnl_cd, act_sale_amt from other_sales_cy
 )
 , py_combined as (
     select chnl_nm, act_sale_amt from current_season_apparel_py
@@ -242,11 +244,26 @@ with cy_item as (
          , sum(act_sale_amt_py) as act_sale_amt_py
     from channel_summary
 )
+-- 채널코드별 실판가 합계 (로열티 계산용)
+, chnl_cd_summary as (
+    select chnl_cd
+         , sum(act_sale_amt) as act_sale_amt
+    from cy_combined
+    group by chnl_cd
+)
+-- 채널코드 3,4,5,7,11 실판가 합계
+, retail_chnl_total as (
+    select sum(act_sale_amt) as retail_act_sale_amt
+    from chnl_cd_summary
+    where chnl_cd in ('3', '4', '5', '7', '11')
+)
 select chnl_nm as CHNL_NM
     , round(act_sale_amt_cy / 1000000) as ACT_SALE_AMT
     , case when act_sale_amt_py = 0 then null 
            else round(act_sale_amt_cy / act_sale_amt_py * 100) 
       end as YOY
+    , null as CHNL_CD
+    , null as RETAIL_ACT_SALE_AMT
 from channel_summary
 union all
 select chnl_nm as CHNL_NM
@@ -254,34 +271,55 @@ select chnl_nm as CHNL_NM
     , case when act_sale_amt_py = 0 then null 
            else round(act_sale_amt_cy / act_sale_amt_py * 100) 
       end as YOY
+    , null as CHNL_CD
+    , round((select retail_act_sale_amt from retail_chnl_total) / 1000000) as RETAIL_ACT_SALE_AMT
 from total_summary
+union all
+select 'CHNL_CD_' || chnl_cd as CHNL_NM
+    , round(act_sale_amt / 1000000) as ACT_SALE_AMT
+    , null as YOY
+    , chnl_cd as CHNL_CD
+    , null as RETAIL_ACT_SALE_AMT
+from chnl_cd_summary
 order by 
-    case CHNL_NM
-        when '전체' then 0
-        when '플래그쉽' then 1
-        when '백화점' then 2
-        when '대리점' then 3
-        when '직영(가두)' then 4
-        when '온라인(직)' then 5
-        when '온라인(제휴)' then 6
-        when '면세점' then 7
-        when 'RF' then 8
-        when '사입' then 9
-        when '기타' then 10
-        else 11
+    case 
+        when CHNL_NM = '전체' then 0
+        when CHNL_NM = '플래그쉽' then 1
+        when CHNL_NM = '백화점' then 2
+        when CHNL_NM = '대리점' then 3
+        when CHNL_NM = '직영(가두)' then 4
+        when CHNL_NM = '온라인(직)' then 5
+        when CHNL_NM = '온라인(제휴)' then 6
+        when CHNL_NM = '면세점' then 7
+        when CHNL_NM = 'RF' then 8
+        when CHNL_NM = '아울렛(직)' then 9
+        when CHNL_NM = '사입' then 10
+        when CHNL_NM = '기타' then 11
+        when CHNL_NM like 'CHNL_CD_%' then 100
+        else 12
     end
 `;
 
     const rows = await executeQuery(query);
 
-    const channelData = rows.filter((row: any) => row.CHNL_NM !== '전체');
+    // 채널명 기준 데이터 (기존)
+    const channelData = rows.filter((row: any) => row.CHNL_NM !== '전체' && !row.CHNL_NM?.startsWith('CHNL_CD_'));
     const totalRow = rows.find((row: any) => row.CHNL_NM === '전체');
+    
+    // 채널코드별 데이터 (로열티 계산용)
+    const chnlCdData = rows.filter((row: any) => row.CHNL_NM?.startsWith('CHNL_CD_'));
+    
+    // 채널코드 3,4,5,7,11 실판가 합계 (백만원 단위)
+    const retailActSaleAmt = totalRow?.RETAIL_ACT_SALE_AMT || 0;
 
     return NextResponse.json({
       success: true,
       data: channelData,
+      channels: channelData,
+      chnlCdData: chnlCdData,
       total: totalRow?.ACT_SALE_AMT || 0,
       totalYOY: totalRow?.YOY || null,
+      retailActSaleAmt: retailActSaleAmt,
       params: {
         brandCode,
         season,
