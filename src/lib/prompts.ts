@@ -10,11 +10,13 @@ export interface HistoricalInsightInput {
 
 const formatCSVValue = (value: number | undefined): string => {
   if (value === undefined || value === null) return '';
+  // 0도 명시적으로 표시
   return value.toFixed(1);
 };
 
 const formatCSVPercent = (value: number | undefined): string => {
   if (value === undefined || value === null) return '';
+  // 0도 명시적으로 표시
   return value.toFixed(1);
 };
 
@@ -57,9 +59,13 @@ export const buildHistoricalPrompt = (input: HistoricalInsightInput): string => 
   
   // 수익성
   addRow('매출총이익', (d) => ({ value: d.grossProfit }));
-  addRow('매출총이익률', (d) => ({ 
-    percent: d.actualSales && d.grossProfit ? (d.grossProfit / d.actualSales) * 100 : undefined 
-  }));
+  addRow('매출총이익률', (d) => { 
+    // 매출총이익률 = (매출총이익 / 실판가) * 1.1 * 100%
+    if (d.actualSales && d.grossProfit !== undefined) {
+      return { percent: (d.grossProfit / d.actualSales) * 1.1 * 100 };
+    }
+    return { percent: undefined };
+  });
   
   // 직접비
   addRow('로열티', (d) => ({ value: d.directCost?.royalty }));
@@ -128,7 +134,15 @@ export const buildHistoricalPrompt = (input: HistoricalInsightInput): string => 
   return `당신은 패션 리테일 FP&A(Financial Planning & Analysis) 전문가입니다.
 아래는 ${input.brandKo}(${input.brand}) 브랜드의 최근 3개 시즌(23S, 24S, 25S) 요약 손익계산서 전체 데이터를 CSV 형식으로 정리한 것입니다.
 
-[중요] 모든 금액은 백만원 단위입니다. 예를 들어, 237,734는 237,734백만원을 의미합니다.
+[중요] 
+- 모든 금액은 백만원 단위입니다. 예를 들어, 237,734는 237,734백만원을 의미합니다.
+- 빈 셀(공백)은 해당 항목에 데이터가 없다는 의미입니다. 0이 아닙니다.
+- CSV 데이터의 숫자 값만을 기준으로 분석하세요. 빈 셀은 무시하세요.
+- 매출총이익률은 (매출총이익 / 실판가) * 1.1 * 100%로 계산됩니다. CSV에 이미 계산된 값이 포함되어 있습니다.
+- 직접비 항목들(로열티, 물류비, 보관료 등)의 값이 0.0으로 표시되면 실제로 0을 의미합니다. 빈 셀이 아닙니다.
+- CSV 데이터의 모든 숫자 값은 실제 데이터입니다. 0이 아닌 값이 있으면 반드시 그 값을 사용하여 분석하세요.
+- 매출총이익률은 (매출총이익 / 실판가) * 1.1 * 100%로 계산됩니다. CSV에 이미 계산된 값이 포함되어 있습니다.
+- 직접비 항목들(로열티, 물류비, 보관료 등)의 값이 0.0으로 표시되면 실제로 0을 의미합니다. 빈 셀이 아닙니다.
 
 ${csvData}
 
