@@ -127,20 +127,20 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
     '23S': actualSales23S?.success ? { 
       total: actualSales23S.total, 
       channels: sortByChannelOrder(actualSales23S.data),
-      chnlCdData: actualSales23S.chnlCdData,
-      retailActSaleAmt: actualSales23S.retailActSaleAmt,
+      chnlCdData: (actualSales23S as any)?.chnlCdData,
+      retailActSaleAmt: (actualSales23S as any)?.retailActSaleAmt,
     } : undefined,
     '24S': actualSales24S?.success ? { 
       total: actualSales24S.total, 
       channels: sortByChannelOrder(actualSales24S.data),
-      chnlCdData: actualSales24S.chnlCdData,
-      retailActSaleAmt: actualSales24S.retailActSaleAmt,
+      chnlCdData: (actualSales24S as any)?.chnlCdData,
+      retailActSaleAmt: (actualSales24S as any)?.retailActSaleAmt,
     } : undefined,
     '25S': actualSales25S?.success ? { 
       total: actualSales25S.total, 
       channels: sortByChannelOrder(actualSales25S.data),
-      chnlCdData: actualSales25S.chnlCdData,
-      retailActSaleAmt: actualSales25S.retailActSaleAmt,
+      chnlCdData: (actualSales25S as any)?.chnlCdData,
+      retailActSaleAmt: (actualSales25S as any)?.retailActSaleAmt,
     } : undefined,
   };
 
