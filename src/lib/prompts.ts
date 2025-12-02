@@ -125,26 +125,6 @@ export const buildHistoricalPrompt = (input: HistoricalInsightInput): string => 
   
   const csvData = csvRows.join('\n') + '\n' + channelRows.join('\n');
 
-  // CSV 데이터를 파일로 저장 (개발/디버깅용)
-  if (typeof window === 'undefined') {
-    // 서버 사이드에서만 실행
-    const fs = require('fs');
-    const path = require('path');
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const filename = `pnl_data_${input.brand}_${timestamp}.csv`;
-    const filepath = path.join(process.cwd(), 'data', 'ai_inputs', filename);
-    
-    // 디렉토리가 없으면 생성
-    const dir = path.dirname(filepath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    
-    // CSV 파일 저장
-    fs.writeFileSync(filepath, csvData, 'utf-8');
-    console.log(`[AI Input] CSV 데이터 저장됨: ${filepath}`);
-  }
-
   return `당신은 패션 리테일 FP&A(Financial Planning & Analysis) 전문가입니다.
 아래는 ${input.brandKo}(${input.brand}) 브랜드의 최근 3개 시즌(23S, 24S, 25S) 요약 손익계산서 전체 데이터를 CSV 형식으로 정리한 것입니다.
 
