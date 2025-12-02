@@ -223,18 +223,14 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
       discountRate: salesTagData['23S']?.total && actualSalesData['23S']?.total
         ? (1 - actualSalesData['23S'].total / salesTagData['23S'].total) * 100
         : undefined,
-      vatExcSales: vatExcSalesData['23S']?.total ? vatExcSalesData['23S'].total / 1000000 : undefined,
-      shippingPrice: vatExcSalesData['23S']?.shippingTotal ? vatExcSalesData['23S'].shippingTotal / 1000000 : undefined,
-      cogs: costOfSalesData['23S']?.cogsActual ? costOfSalesData['23S'].cogsActual : undefined,
-      inventoryValuationReversal: costOfSalesData['23S']?.stkAsstAprctAmt
-        ? costOfSalesData['23S'].stkAsstAprctAmt
-        : undefined,
-      inventoryValuationAddition: costOfSalesData['23S']?.vltnAmt
-        ? costOfSalesData['23S'].vltnAmt
-        : undefined,
-      cogsTotal: costOfSalesData['23S']?.cogsTotal ? costOfSalesData['23S'].cogsTotal : undefined,
+      vatExcSales: vatExcSalesData['23S']?.total, // 이미 백만원 단위
+      shippingPrice: vatExcSalesData['23S']?.shippingTotal, // 이미 백만원 단위
+      cogs: costOfSalesData['23S']?.cogsActual, // 이미 백만원 단위
+      inventoryValuationReversal: costOfSalesData['23S']?.stkAsstAprctAmt, // 이미 백만원 단위
+      inventoryValuationAddition: costOfSalesData['23S']?.vltnAmt, // 이미 백만원 단위
+      cogsTotal: costOfSalesData['23S']?.cogsTotal, // 이미 백만원 단위
       grossProfit: vatExcSalesData['23S']?.total && costOfSalesData['23S']?.cogsTotal
-        ? (vatExcSalesData['23S'].total / 1000000) - costOfSalesData['23S'].cogsTotal
+        ? vatExcSalesData['23S'].total - costOfSalesData['23S'].cogsTotal // 둘 다 백만원 단위
         : undefined,
       directCost: directCostData['23S']?.totals
         ? {
@@ -254,9 +250,9 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
       directProfit: vatExcSalesData['23S']?.total &&
         costOfSalesData['23S']?.cogsTotal &&
         directCostData['23S']?.totals
-        ? (vatExcSalesData['23S'].total / 1000000) -
+        ? vatExcSalesData['23S'].total -
             costOfSalesData['23S'].cogsTotal -
-            directCostData['23S'].totals.DIRECT_COST_TOTAL // 이미 백만원 단위
+            directCostData['23S'].totals.DIRECT_COST_TOTAL // 모두 백만원 단위
         : undefined,
       operatingExpense: operatingExpenseData['23S']
         ? {
@@ -291,18 +287,14 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
       discountRate: salesTagData['24S']?.total && actualSalesData['24S']?.total
         ? (1 - actualSalesData['24S'].total / salesTagData['24S'].total) * 100
         : undefined,
-      vatExcSales: vatExcSalesData['24S']?.total ? vatExcSalesData['24S'].total / 1000000 : undefined,
-      shippingPrice: vatExcSalesData['24S']?.shippingTotal ? vatExcSalesData['24S'].shippingTotal / 1000000 : undefined,
-      cogs: costOfSalesData['24S']?.cogsActual ? costOfSalesData['24S'].cogsActual : undefined,
-      inventoryValuationReversal: costOfSalesData['24S']?.stkAsstAprctAmt
-        ? costOfSalesData['24S'].stkAsstAprctAmt
-        : undefined,
-      inventoryValuationAddition: costOfSalesData['24S']?.vltnAmt
-        ? costOfSalesData['24S'].vltnAmt
-        : undefined,
-      cogsTotal: costOfSalesData['24S']?.cogsTotal ? costOfSalesData['24S'].cogsTotal : undefined,
+      vatExcSales: vatExcSalesData['24S']?.total, // 이미 백만원 단위
+      shippingPrice: vatExcSalesData['24S']?.shippingTotal, // 이미 백만원 단위
+      cogs: costOfSalesData['24S']?.cogsActual, // 이미 백만원 단위
+      inventoryValuationReversal: costOfSalesData['24S']?.stkAsstAprctAmt, // 이미 백만원 단위
+      inventoryValuationAddition: costOfSalesData['24S']?.vltnAmt, // 이미 백만원 단위
+      cogsTotal: costOfSalesData['24S']?.cogsTotal, // 이미 백만원 단위
       grossProfit: vatExcSalesData['24S']?.total && costOfSalesData['24S']?.cogsTotal
-        ? (vatExcSalesData['24S'].total / 1000000) - costOfSalesData['24S'].cogsTotal
+        ? vatExcSalesData['24S'].total - costOfSalesData['24S'].cogsTotal // 둘 다 백만원 단위
         : undefined,
       directCost: directCostData['24S']?.totals
         ? {
@@ -322,9 +314,9 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
       directProfit: vatExcSalesData['24S']?.total &&
         costOfSalesData['24S']?.cogsTotal &&
         directCostData['24S']?.totals
-        ? (vatExcSalesData['24S'].total / 1000000) -
+        ? vatExcSalesData['24S'].total -
             costOfSalesData['24S'].cogsTotal -
-            directCostData['24S'].totals.DIRECT_COST_TOTAL // 이미 백만원 단위
+            directCostData['24S'].totals.DIRECT_COST_TOTAL // 모두 백만원 단위
         : undefined,
       operatingExpense: operatingExpenseData['24S']
         ? {
@@ -359,18 +351,14 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
       discountRate: salesTagData['25S']?.total && actualSalesData['25S']?.total
         ? (1 - actualSalesData['25S'].total / salesTagData['25S'].total) * 100
         : undefined,
-      vatExcSales: vatExcSalesData['25S']?.total ? vatExcSalesData['25S'].total / 1000000 : undefined,
-      shippingPrice: vatExcSalesData['25S']?.shippingTotal ? vatExcSalesData['25S'].shippingTotal / 1000000 : undefined,
-      cogs: costOfSalesData['25S']?.cogsActual ? costOfSalesData['25S'].cogsActual : undefined,
-      inventoryValuationReversal: costOfSalesData['25S']?.stkAsstAprctAmt
-        ? costOfSalesData['25S'].stkAsstAprctAmt
-        : undefined,
-      inventoryValuationAddition: costOfSalesData['25S']?.vltnAmt
-        ? costOfSalesData['25S'].vltnAmt
-        : undefined,
-      cogsTotal: costOfSalesData['25S']?.cogsTotal ? costOfSalesData['25S'].cogsTotal : undefined,
+      vatExcSales: vatExcSalesData['25S']?.total, // 이미 백만원 단위
+      shippingPrice: vatExcSalesData['25S']?.shippingTotal, // 이미 백만원 단위
+      cogs: costOfSalesData['25S']?.cogsActual, // 이미 백만원 단위
+      inventoryValuationReversal: costOfSalesData['25S']?.stkAsstAprctAmt, // 이미 백만원 단위
+      inventoryValuationAddition: costOfSalesData['25S']?.vltnAmt, // 이미 백만원 단위
+      cogsTotal: costOfSalesData['25S']?.cogsTotal, // 이미 백만원 단위
       grossProfit: vatExcSalesData['25S']?.total && costOfSalesData['25S']?.cogsTotal
-        ? (vatExcSalesData['25S'].total / 1000000) - costOfSalesData['25S'].cogsTotal
+        ? vatExcSalesData['25S'].total - costOfSalesData['25S'].cogsTotal // 둘 다 백만원 단위
         : undefined,
       directCost: directCostData['25S']?.totals
         ? {
@@ -390,9 +378,9 @@ export const HistoricalTab = ({ brand, data }: HistoricalTabProps) => {
       directProfit: vatExcSalesData['25S']?.total &&
         costOfSalesData['25S']?.cogsTotal &&
         directCostData['25S']?.totals
-        ? (vatExcSalesData['25S'].total / 1000000) -
+        ? vatExcSalesData['25S'].total -
             costOfSalesData['25S'].cogsTotal -
-            directCostData['25S'].totals.DIRECT_COST_TOTAL // 이미 백만원 단위
+            directCostData['25S'].totals.DIRECT_COST_TOTAL // 모두 백만원 단위
         : undefined,
       operatingExpense: operatingExpenseData['25S']
         ? {
