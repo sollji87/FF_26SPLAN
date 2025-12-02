@@ -997,12 +997,23 @@ export const SummaryPnlTable = forwardRef<SummaryPnlTableRef, SummaryPnlTablePro
                 <TableCell className="font-semibold text-slate-900 hover:font-bold hover:underline">
                   매출원가
                 </TableCell>
-                {seasonKeys.map((seasonKey, idx) => {
+                {seasonKeys.map((seasonKey) => {
                   const value = costOfSalesData?.[seasonKey]?.cogsTotal ?? 0;
-                  const previousValue = idx > 0 ? costOfSalesData?.[seasonKeys[idx - 1]]?.cogsTotal : undefined;
+                  // 실판가 총액
+                  const actualSalesTotal = actualSalesData?.[seasonKey]?.total ?? 0;
+                  // (매출원가/실판가)*1.1*100%
+                  const percentValue = actualSalesTotal > 0 ? ((value / actualSalesTotal) * 1.1 * 100) : 0;
+                  
                   return (
                     <Fragment key={seasonKey}>
-                      {renderValueAndPercent(value, previousValue, 'font-semibold')}
+                      <TableCell className="text-right">
+                        <span className="font-semibold text-slate-900">{formatCurrency(value)}</span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <span className="text-xs text-slate-600 font-semibold">
+                          {percentValue.toFixed(1)}%
+                        </span>
+                      </TableCell>
                     </Fragment>
                   );
                 })}

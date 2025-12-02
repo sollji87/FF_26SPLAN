@@ -1,7 +1,7 @@
 'use client';
 
 import { SimulationResult } from '../../lib/calc';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, PieLabelRenderProps } from 'recharts';
 
 interface CostDonutChartProps {
   result: SimulationResult;
@@ -17,21 +17,13 @@ export const CostDonutChart = ({ result }: CostDonutChartProps) => {
     { name: '영업이익', value: Math.round(result.operatingProfit / 10000) },
   ];
 
-  const renderCustomLabel = ({
-    cx,
-    cy,
-    midAngle,
-    innerRadius,
-    outerRadius,
-    percent,
-  }: {
-    cx: number;
-    cy: number;
-    midAngle: number;
-    innerRadius: number;
-    outerRadius: number;
-    percent: number;
-  }) => {
+  const renderCustomLabel = (props: PieLabelRenderProps) => {
+    const { cx, cy, midAngle, innerRadius, outerRadius, percent } = props;
+    
+    if (!midAngle || !innerRadius || !outerRadius || percent === undefined) {
+      return null;
+    }
+
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
