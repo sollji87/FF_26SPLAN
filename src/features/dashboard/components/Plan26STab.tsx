@@ -175,7 +175,7 @@ export const Plan26STab = ({
       }
     };
     loadSeasonTotals();
-  }, [brand.code, brand.id]);
+  }, [brand.snowflakeCode, brand.id]);
 
   // 시즌별 계획 합계(천원) 계산
   // 다중 시나리오 합산(선택된 시나리오)
