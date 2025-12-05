@@ -1,17 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -19,163 +11,269 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Save, FolderOpen, Trash2 } from 'lucide-react';
-import { useScenarios, ScenarioData } from '../hooks/useScenarios';
-import { Card, CardContent } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Plus,
+  Save,
+  Copy,
+  Trash2,
+  MoreVertical,
+  Edit2,
+  FolderOpen,
+} from 'lucide-react';
+import { Scenario26S } from '../types/plan26s';
+import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
 
 interface ScenarioManagerProps {
-  brandId: string;
-  currentData: Partial<ScenarioData>;
-  onLoadScenario?: (scenario: ScenarioData) => void;
+  scenarios: Scenario26S[];
+  activeScenarioId: string | null;
+  onCreateScenario: (name?: string) => void;
+  onSelectScenario: (scenarioId: string) => void;
+  onDuplicateScenario: (scenarioId: string) => void;
+  onDeleteScenario: (scenarioId: string) => void;
+  onRenameScenario: (scenarioId: string, name: string) => void;
 }
 
-export const ScenarioManager = ({ brandId, currentData, onLoadScenario }: ScenarioManagerProps) => {
-  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
-  const [loadDialogOpen, setLoadDialogOpen] = useState(false);
-  const [scenarioName, setScenarioName] = useState('');
+export const ScenarioManager = ({
+  scenarios,
+  activeScenarioId,
+  onCreateScenario,
+  onSelectScenario,
+  onDuplicateScenario,
+  onDeleteScenario,
+  onRenameScenario,
+}: ScenarioManagerProps) => {
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [newScenarioName, setNewScenarioName] = useState('');
+  const [targetScenarioId, setTargetScenarioId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
 
-  const { scenarios, activeScenario, addScenario, deleteScenario, setActiveScenario, getScenarios } = useScenarios();
-  const brandScenarios = getScenarios(brandId);
-  const activeScenarioId = activeScenario[brandId];
+  const activeScenario = scenarios.find((s) => s.id === activeScenarioId);
+  const targetScenario = scenarios.find((s) => s.id === targetScenarioId);
 
-  const handleSave = () => {
-    if (!scenarioName.trim()) return;
+  const handleCreate = useCallback(() => {
+    onCreateScenario(newScenarioName || undefined);
+    setNewScenarioName('');
+    setIsCreateDialogOpen(false);
+  }, [newScenarioName, onCreateScenario]);
 
-    const newScenario: ScenarioData = {
-      id: `scenario-${Date.now()}`,
-      name: scenarioName,
-      createdAt: new Date().toISOString(),
-      revenue: currentData.revenue || { channelRevenues: [], totalRevenue: 0 },
-      order: currentData.order || { totalAmount: 0, categories: [] },
-      markup: currentData.markup || { targetMU: 250, categoryMUs: [] },
-      adExpense: currentData.adExpense || { totalAmount: 0, channels: [] },
-      headcount: currentData.headcount || { totalHeadcount: 0, avgSalary: 0, departments: [] },
-    };
-
-    addScenario(brandId, newScenario);
-    setActiveScenario(brandId, newScenario.id);
-    setScenarioName('');
-    setSaveDialogOpen(false);
-  };
-
-  const handleLoad = (scenarioId: string) => {
-    const scenario = brandScenarios.find((s) => s.id === scenarioId);
-    if (scenario && onLoadScenario) {
-      onLoadScenario(scenario);
-      setActiveScenario(brandId, scenarioId);
-      setLoadDialogOpen(false);
+  const handleRename = useCallback(() => {
+    if (targetScenarioId && renameValue.trim()) {
+      onRenameScenario(targetScenarioId, renameValue.trim());
+      setIsRenameDialogOpen(false);
+      setTargetScenarioId(null);
+      setRenameValue('');
     }
-  };
+  }, [targetScenarioId, renameValue, onRenameScenario]);
 
-  const handleDelete = (scenarioId: string) => {
-    if (confirm('이 시나리오를 삭제하시겠습니까?')) {
-      deleteScenario(brandId, scenarioId);
+  const handleDelete = useCallback(() => {
+    if (targetScenarioId) {
+      onDeleteScenario(targetScenarioId);
+      setIsDeleteDialogOpen(false);
+      setTargetScenarioId(null);
     }
-  };
+  }, [targetScenarioId, onDeleteScenario]);
+
+  const openRenameDialog = useCallback((scenarioId: string) => {
+    const scenario = scenarios.find((s) => s.id === scenarioId);
+    if (scenario) {
+      setTargetScenarioId(scenarioId);
+      setRenameValue(scenario.name);
+      setIsRenameDialogOpen(true);
+    }
+  }, [scenarios]);
+
+  const openDeleteDialog = useCallback((scenarioId: string) => {
+    setTargetScenarioId(scenarioId);
+    setIsDeleteDialogOpen(true);
+  }, []);
 
   return (
-    <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-      <CardContent className="pt-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-semibold text-slate-900 mb-1">시나리오 관리</h3>
-            <p className="text-sm text-slate-600">
-              {activeScenarioId
-                ? `활성: ${brandScenarios.find((s) => s.id === activeScenarioId)?.name || '없음'}`
-                : '저장된 시나리오가 없습니다'}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Save className="w-4 h-4" />
-                  저장
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>시나리오 저장</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div>
-                    <Label htmlFor="scenario-name">시나리오 이름</Label>
-                    <Input
-                      id="scenario-name"
-                      placeholder="예: 보수적 시나리오, 공격적 시나리오"
-                      value={scenarioName}
-                      onChange={(e) => setScenarioName(e.target.value)}
-                      className="mt-2"
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>
-                    취소
-                  </Button>
-                  <Button onClick={handleSave} disabled={!scenarioName.trim()}>
-                    저장
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-            <Dialog open={loadDialogOpen} onOpenChange={setLoadDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2" disabled={brandScenarios.length === 0}>
-                  <FolderOpen className="w-4 h-4" />
-                  불러오기
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>시나리오 불러오기</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  {brandScenarios.length === 0 ? (
-                    <p className="text-sm text-slate-500 text-center py-4">
-                      저장된 시나리오가 없습니다.
-                    </p>
+    <>
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <FolderOpen className="w-4 h-4 text-amber-600" />
+            시나리오 관리
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap items-center gap-3">
+            {/* 시나리오 선택 */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-slate-600">현재 시나리오:</span>
+              <Select
+                value={activeScenarioId || ''}
+                onValueChange={onSelectScenario}
+              >
+                <SelectTrigger className="w-56">
+                  <SelectValue placeholder="시나리오 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  {scenarios.length === 0 ? (
+                    <SelectItem value="" disabled>
+                      시나리오가 없습니다
+                    </SelectItem>
                   ) : (
-                    <div className="space-y-2">
-                      {brandScenarios.map((scenario) => (
-                        <div
-                          key={scenario.id}
-                          className="flex items-center justify-between p-3 border rounded-lg hover:bg-slate-50"
-                        >
-                          <div className="flex-1">
-                            <p className="font-medium">{scenario.name}</p>
-                            <p className="text-xs text-slate-500">
-                              {new Date(scenario.createdAt).toLocaleString('ko-KR')}
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleLoad(scenario.id)}
-                            >
-                              불러오기
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleDelete(scenario.id)}
-                            >
-                              <Trash2 className="w-4 h-4 text-red-500" />
-                            </Button>
-                          </div>
+                    scenarios.map((scenario) => (
+                      <SelectItem key={scenario.id} value={scenario.id}>
+                        <div className="flex flex-col">
+                          <span>{scenario.name}</span>
+                          <span className="text-xs text-slate-400">
+                            {format(new Date(scenario.updatedAt), 'MM/dd HH:mm', { locale: ko })}
+                          </span>
                         </div>
-                      ))}
-                    </div>
+                      </SelectItem>
+                    ))
                   )}
-                </div>
-              </DialogContent>
-            </Dialog>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 액션 버튼들 */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsCreateDialogOpen(true)}
+              className="flex items-center gap-1"
+            >
+              <Plus className="w-4 h-4" />
+              새 시나리오
+            </Button>
+
+            {activeScenario && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => openRenameDialog(activeScenario.id)}>
+                    <Edit2 className="w-4 h-4 mr-2" />
+                    이름 변경
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onDuplicateScenario(activeScenario.id)}>
+                    <Copy className="w-4 h-4 mr-2" />
+                    복제
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => openDeleteDialog(activeScenario.id)}
+                    className="text-red-600"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    삭제
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
+            {/* 시나리오 정보 */}
+            {activeScenario && (
+              <div className="flex-1 text-right text-xs text-slate-500">
+                마지막 수정: {format(new Date(activeScenario.updatedAt), 'yyyy-MM-dd HH:mm:ss', { locale: ko })}
+              </div>
+            )}
           </div>
-        </div>
-      </CardContent>
-    </Card>
+
+          {scenarios.length === 0 && (
+            <div className="mt-4 p-6 text-center bg-slate-50 rounded-lg">
+              <p className="text-slate-600 mb-2">아직 시나리오가 없습니다.</p>
+              <Button onClick={() => setIsCreateDialogOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                첫 번째 시나리오 만들기
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 새 시나리오 생성 다이얼로그 */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>새 시나리오 만들기</DialogTitle>
+            <DialogDescription>
+              26S 사업계획 시나리오를 만들어 다양한 매출 계획을 시뮬레이션해보세요.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              placeholder="시나리오 이름 (예: 보수적 시나리오)"
+              value={newScenarioName}
+              onChange={(e) => setNewScenarioName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+              취소
+            </Button>
+            <Button onClick={handleCreate}>만들기</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 이름 변경 다이얼로그 */}
+      <Dialog open={isRenameDialogOpen} onOpenChange={setIsRenameDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>시나리오 이름 변경</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              placeholder="새 이름"
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleRename()}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsRenameDialogOpen(false)}>
+              취소
+            </Button>
+            <Button onClick={handleRename}>변경</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 삭제 확인 다이얼로그 */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>시나리오 삭제</DialogTitle>
+            <DialogDescription>
+              "{targetScenario?.name}" 시나리오를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              취소
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              삭제
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
-

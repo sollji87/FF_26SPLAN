@@ -7,12 +7,13 @@ import { getBrandById } from '@/features/dashboard/constants/brands';
 import { getBrandMockData } from '@/features/dashboard/constants/mockData';
 import { DashboardHeader } from '@/features/dashboard/components/DashboardHeader';
 import { HistoricalTab } from '@/features/dashboard/components/HistoricalTab';
-import { Revenue26STab } from '@/features/dashboard/components/Revenue26STab';
+import { Plan26STab } from '@/features/dashboard/components/Plan26STab';
 import { Order26STab } from '@/features/dashboard/components/Order26STab';
 import { Markup26STab } from '@/features/dashboard/components/Markup26STab';
 import { AdExpense26STab } from '@/features/dashboard/components/AdExpense26STab';
 import { Headcount26STab } from '@/features/dashboard/components/Headcount26STab';
 import { PnL26STab } from '@/features/dashboard/components/PnL26STab';
+import { useActualSalesData, useSalesTagData } from '@/features/dashboard/hooks/useSalesData';
 import { BarChart3, DollarSign, Package, Percent, Megaphone, Users, FileText } from 'lucide-react';
 
 interface BrandPageProps {
@@ -23,6 +24,18 @@ export default function BrandPage({ params }: BrandPageProps) {
   const { brand: brandId } = use(params);
   const brand = getBrandById(brandId);
   const data = getBrandMockData(brandId);
+
+  // 25S 실판매TAG/실판매출액 조회 (천원 단위로 변환) - 과거실적과 동일 소스 사용
+  const brandCodeForApi = brand?.snowflakeCode || brand?.id || '';
+  const { data: actualSales25S } = useActualSalesData(brandCodeForApi, '25S');
+  const { data: salesTag25S } = useSalesTagData(brandCodeForApi, '25S');
+
+  const season25SActualSales = actualSales25S?.total
+    ? actualSales25S.total * 1000 // 백만원 -> 천원 변환
+    : 0;
+  const season25SSalesTag = salesTag25S?.total
+    ? salesTag25S.total * 1000 // 백만원 -> 천원 변환
+    : 0;
 
   if (!brand || !data) {
     notFound();
@@ -93,7 +106,13 @@ export default function BrandPage({ params }: BrandPageProps) {
           </TabsContent>
 
           <TabsContent value="revenue">
-            <Revenue26STab brand={brand} data={data} />
+            <Plan26STab
+              brand={brand}
+              season25SActualSales={season25SActualSales}
+              season25SSalesTag={season25SSalesTag}
+              baselineActualSalesChannels={actualSales25S?.data || []}
+              baselineSalesTagChannels={salesTag25S?.data || []}
+            />
           </TabsContent>
 
           <TabsContent value="order">
