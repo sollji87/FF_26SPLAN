@@ -7,8 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
 import { TrendingUp } from 'lucide-react';
-import { ScenarioManager } from './ScenarioManager';
-import { ScenarioData } from '../hooks/useScenarios';
 import {
   BarChart,
   Bar,
@@ -58,27 +56,8 @@ export const Revenue26STab = ({ brand, data }: Revenue26STabProps) => {
     '26S': Math.round(ch.revenue26S / 10000),
   }));
 
-  const handleLoadScenario = (scenario: ScenarioData) => {
-    if (scenario.revenue && scenario.revenue.channelRevenues) {
-      setChannelRevenues(scenario.revenue.channelRevenues);
-    }
-  };
-
-  const currentScenarioData: Partial<ScenarioData> = {
-    revenue: {
-      channelRevenues,
-      totalRevenue: totalRevenue26S,
-    },
-  };
-
   return (
     <div className="space-y-6">
-      <ScenarioManager
-        brandId={brand.id}
-        currentData={currentScenarioData}
-        onLoadScenario={handleLoadScenario}
-      />
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-6">
