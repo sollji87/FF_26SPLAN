@@ -11,7 +11,7 @@ import { SalesInputTable } from './SalesInputTable';
 import { ExcelUploader } from './ExcelUploader';
 import { ScenarioManager } from './ScenarioManager';
 import { SalesCompareCharts } from './charts/SalesCompareCharts';
-import { SalesInputRow, CHANNELS, formatThousandWon } from '../types/plan26s';
+import { SalesInputRow, CHANNELS, SeasonCode, formatThousandWon } from '../types/plan26s';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -206,11 +206,12 @@ export const Plan26STab = ({
   // 시즌별 baseline: 계획 시즌의 전년 시즌 값을 매칭
   const baseSeasonData = useMemo(() => {
     return Object.keys(seasonPlanTotals).map((planSeason) => {
-      const prev = getPrevSeason(planSeason);
+      const code = planSeason as SeasonCode;
+      const prev = getPrevSeason(planSeason) as SeasonCode;
       const base = seasonBaselineTotals[prev] || 0;
       return {
-        seasonCode: planSeason,
-        seasonName: planSeason,
+        seasonCode: code,
+        seasonName: code,
         sales25S: base, // 전년 시즌 실적
         sales26S: 0,
         change: 0,
