@@ -11,7 +11,7 @@ import { SalesInputTable } from './SalesInputTable';
 import { ExcelUploader } from './ExcelUploader';
 import { ScenarioManager } from './ScenarioManager';
 import { SalesCompareCharts } from './charts/SalesCompareCharts';
-import { SalesInputRow, CHANNELS, SeasonCode, formatThousandWon } from '../types/plan26s';
+import { SalesInputRow, CHANNELS, SeasonCode, ItemCategoryCode, formatThousandWon } from '../types/plan26s';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -195,6 +195,7 @@ export const Plan26STab = ({
   }, [selectedScenarios]);
 
   const asSeasonCode = useCallback((code: string): SeasonCode => code as SeasonCode, []);
+  const asCategoryCode = useCallback((code: string): ItemCategoryCode => code as ItemCategoryCode, []);
 
   // 전년 시즌 코드 매핑 (26S -> 25S, 25N -> 24N 등)
   const getPrevSeason = useCallback((code: string) => {
@@ -591,7 +592,7 @@ export const Plan26STab = ({
                     itemAgg[row.categoryCode] = (itemAgg[row.categoryCode] || 0) + row.actualSalesAmt;
                   });
                   const itemCategoryData = Object.entries(itemAgg).map(([code, val]) => ({
-                    categoryCode: code,
+                    categoryCode: asCategoryCode(code),
                     categoryName: code,
                     sales25S: 0,
                     sales26S: val,
