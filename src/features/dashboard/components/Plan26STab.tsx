@@ -194,6 +194,8 @@ export const Plan26STab = ({
     return totals;
   }, [selectedScenarios]);
 
+  const asSeasonCode = useCallback((code: string): SeasonCode => code as SeasonCode, []);
+
   // 전년 시즌 코드 매핑 (26S -> 25S, 25N -> 24N 등)
   const getPrevSeason = useCallback((code: string) => {
     if (code.length < 3) return code;
@@ -206,8 +208,8 @@ export const Plan26STab = ({
   // 시즌별 baseline: 계획 시즌의 전년 시즌 값을 매칭
   const baseSeasonData = useMemo(() => {
     return Object.keys(seasonPlanTotals).map((planSeason) => {
-      const code = planSeason as SeasonCode;
-      const prev = getPrevSeason(planSeason) as SeasonCode;
+      const code = asSeasonCode(planSeason);
+      const prev = asSeasonCode(getPrevSeason(planSeason));
       const base = seasonBaselineTotals[prev] || 0;
       return {
         seasonCode: code,
@@ -575,7 +577,7 @@ export const Plan26STab = ({
                     seasonAgg[row.seasonCode] = (seasonAgg[row.seasonCode] || 0) + row.actualSalesAmt;
                   });
                   const seasonData = Object.entries(seasonAgg).map(([code, val]) => ({
-                    seasonCode: code,
+                    seasonCode: asSeasonCode(code),
                     seasonName: code,
                     sales25S: 0,
                     sales26S: val,
