@@ -169,7 +169,6 @@ export const ExcelUploader = ({ onUpload, currentInputs }: ExcelUploaderProps) =
           maxRows: 10000,
           maxCols: 50,
           allowFormulas: false, // 수식 차단
-          timeout: 30000, // 30초
         });
 
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];

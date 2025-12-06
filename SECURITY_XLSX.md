@@ -95,13 +95,13 @@ XLSX.read(arrayBuffer, {
 })
 ```
 
-### 4. 타임아웃 설정
+### 4. 파일 크기 및 구조 제한
 
-```typescript
-timeout: 30,000ms (기본값)
-```
-- ReDoS 공격으로 인한 무한 처리 방지
-- 파일 읽기 및 파싱 시간 제한
+**중요**: XLSX.read()는 동기 작업이므로 타임아웃을 적용할 수 없습니다.
+대신 다음 제한으로 DoS 공격을 방지합니다:
+- 파일 크기 제한 (10MB)
+- 시트 개수 제한 (5개)
+- 행/열 개수 제한 (10,000행 / 50열)
 
 ### 5. 에러 처리 강화
 
@@ -129,7 +129,6 @@ const workbook = await secureReadFile(file, {
   maxRows: 10000,
   maxCols: 50,
   allowFormulas: false,
-  timeout: 30000,
 });
 ```
 
