@@ -38,6 +38,11 @@ import {
   getCategoryCode,
   formatThousandWon,
 } from '../types/plan26s';
+import {
+  secureReadFile,
+  secureSheetToJson,
+  secureWriteFile,
+} from '@/lib/xlsx-security';
 
 interface ExcelUploaderProps {
   onUpload: (inputs: SalesInputRow[]) => void;
@@ -157,10 +162,23 @@ export const ExcelUploader = ({ onUpload, currentInputs }: ExcelUploaderProps) =
       setIsLoading(true);
 
       try {
-        const arrayBuffer = await file.arrayBuffer();
-        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+        // 보안이 강화된 파일 읽기
+        const workbook = await secureReadFile(file, {
+          maxFileSize: 10 * 1024 * 1024, // 10MB
+          maxSheets: 5,
+          maxRows: 10000,
+          maxCols: 50,
+          allowFormulas: false, // 수식 차단
+          timeout: 30000, // 30초
+        });
+
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rawData = XLSX.utils.sheet_to_json<ParsedRow>(firstSheet);
+
+        // 보안이 강화된 JSON 변환
+        const rawData = secureSheetToJson<ParsedRow>(firstSheet, {
+          maxRows: 10000,
+          maxCols: 50,
+        });
 
         const result = validateAndParse(rawData);
         setValidationResult(result);
@@ -168,9 +186,10 @@ export const ExcelUploader = ({ onUpload, currentInputs }: ExcelUploaderProps) =
         setIsDialogOpen(true);
       } catch (error) {
         console.error('Excel parsing error:', error);
+        const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
         setValidationResult({
           isValid: false,
-          errors: ['파일을 읽는 중 오류가 발생했습니다. 올바른 엑셀 파일인지 확인해주세요.'],
+          errors: [errorMessage],
           parsedData: [],
         });
         setIsDialogOpen(true);
@@ -214,21 +233,31 @@ export const ExcelUploader = ({ onUpload, currentInputs }: ExcelUploaderProps) =
       }
     }
 
-    const worksheet = XLSX.utils.json_to_sheet(templateData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, '26S 매출계획');
+    try {
+      // 보안이 강화된 파일 쓰기
+      const worksheet = XLSX.utils.json_to_sheet(templateData);
 
-    // 컬럼 너비 설정
-    worksheet['!cols'] = [
-      { wch: 12 }, // 채널
-      { wch: 12 }, // 시즌구분
-      { wch: 12 }, // 카테고리
-      { wch: 18 }, // 판매TAG
-      { wch: 12 }, // 할인율
-      { wch: 18 }, // 실판매출액
-    ];
+      // 컬럼 너비 설정
+      worksheet['!cols'] = [
+        { wch: 12 }, // 채널
+        { wch: 12 }, // 시즌구분
+        { wch: 12 }, // 카테고리
+        { wch: 18 }, // 판매TAG
+        { wch: 12 }, // 할인율
+        { wch: 18 }, // 실판매출액
+      ];
 
-    XLSX.writeFile(workbook, '26S_매출계획_템플릿.xlsx');
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, '26S 매출계획');
+
+      XLSX.writeFile(workbook, '26S_매출계획_템플릿.xlsx', {
+        compression: true,
+        bookType: 'xlsx',
+      });
+    } catch (error) {
+      console.error('Template download error:', error);
+      alert('템플릿 다운로드 중 오류가 발생했습니다.');
+    }
   }, []);
 
   const handleDownloadCurrentData = useCallback(() => {
@@ -241,20 +270,31 @@ export const ExcelUploader = ({ onUpload, currentInputs }: ExcelUploaderProps) =
       '실판매출액(천원)': input.actualSalesAmt,
     }));
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, '26S 매출계획');
+    try {
+      // 보안이 강화된 파일 쓰기
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
 
-    worksheet['!cols'] = [
-      { wch: 12 },
-      { wch: 12 },
-      { wch: 12 },
-      { wch: 18 },
-      { wch: 12 },
-      { wch: 18 },
-    ];
+      worksheet['!cols'] = [
+        { wch: 12 },
+        { wch: 12 },
+        { wch: 12 },
+        { wch: 18 },
+        { wch: 12 },
+        { wch: 18 },
+      ];
 
-    XLSX.writeFile(workbook, `26S_매출계획_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, '26S 매출계획');
+
+      const filename = `26S_매출계획_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      XLSX.writeFile(workbook, filename, {
+        compression: true,
+        bookType: 'xlsx',
+      });
+    } catch (error) {
+      console.error('Data export error:', error);
+      alert('데이터 내보내기 중 오류가 발생했습니다.');
+    }
   }, [currentInputs]);
 
   return (
