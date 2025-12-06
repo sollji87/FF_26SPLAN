@@ -26,7 +26,7 @@ export interface SecureReadOptions {
   maxRows?: number; // default: 10000
   maxCols?: number; // default: 100
   allowFormulas?: boolean; // default: false
-  timeout?: number; // ms, default: 30000
+  timeout?: number; // DEPRECATED: XLSX.read()는 동기 작업이므로 타임아웃 적용 불가
 }
 
 export interface SecurityValidationResult {
@@ -198,23 +198,10 @@ export function validateWorkbook(
 }
 
 /**
- * 타임아웃을 적용하여 Promise를 실행합니다.
- */
-function withTimeout<T>(
-  promise: Promise<T>,
-  timeoutMs: number,
-  errorMessage: string
-): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error(errorMessage)), timeoutMs)
-    ),
-  ]);
-}
-
-/**
  * 보안이 강화된 XLSX 파일 읽기
+ *
+ * Note: XLSX.read()는 동기 작업이므로 타임아웃을 적용할 수 없습니다.
+ * 대신 파일 크기와 구조 제한으로 DoS 공격을 방지합니다.
  */
 export async function secureReadFile(
   file: File,
@@ -230,12 +217,8 @@ export async function secureReadFile(
     );
   }
 
-  // 2. ArrayBuffer 읽기 (타임아웃 적용)
-  const arrayBuffer = await withTimeout(
-    file.arrayBuffer(),
-    opts.timeout,
-    '파일 읽기 시간 초과'
-  );
+  // 2. ArrayBuffer 읽기
+  const arrayBuffer = await file.arrayBuffer();
 
   // 3. 매직 넘버 검증
   const bufferValidation = validateArrayBuffer(arrayBuffer);
@@ -245,21 +228,17 @@ export async function secureReadFile(
     );
   }
 
-  // 4. XLSX 파싱 (타임아웃 적용, 수식 비활성화)
-  const workbook = await withTimeout(
-    Promise.resolve(
-      XLSX.read(arrayBuffer, {
-        type: 'array',
-        cellFormula: opts.allowFormulas, // 수식 처리 여부
-        cellHTML: false, // HTML 비활성화
-        cellStyles: false, // 스타일 비활성화 (성능 향상)
-        sheetStubs: false, // 빈 셀 무시
-        dense: false, // 메모리 효율
-      })
-    ),
-    opts.timeout,
-    'Excel 파일 파싱 시간 초과'
-  );
+  // 4. XLSX 파싱 (수식 비활성화)
+  // Note: XLSX.read()는 동기 작업이므로 타임아웃 적용 불가
+  // 파일 크기/구조 제한으로 DoS 방지
+  const workbook = XLSX.read(arrayBuffer, {
+    type: 'array',
+    cellFormula: opts.allowFormulas, // 수식 처리 여부
+    cellHTML: false, // HTML 비활성화
+    cellStyles: false, // 스타일 비활성화 (성능 향상)
+    sheetStubs: false, // 빈 셀 무시
+    dense: false, // 메모리 효율
+  });
 
   // 5. Workbook 구조 검증
   const workbookValidation = validateWorkbook(workbook, opts);
@@ -296,7 +275,7 @@ export function secureSheetToJson<T = any>(
 
   // JSON 변환 (수식 제외, 원시 값만)
   return XLSX.utils.sheet_to_json<T>(sheet, {
-    raw: false, // 포맷된 텍스트 사용
+    raw: true, // 원시 숫자 값 사용 (Number() 변환 가능)
     defval: undefined, // 빈 셀은 undefined
   });
 }
